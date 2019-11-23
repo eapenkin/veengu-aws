@@ -36,7 +36,7 @@ public class PipelineStack extends Stack {
                 "AWS_DEFAULT_REGION", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(getRegion()).build(),
                 "AWS_ACCOUNT_ID", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(getAccount()).build(),
                 "IMAGE_TAG", BuildEnvironmentVariable.builder().type(PLAINTEXT).value("latest").build(),
-                "IMAGE_REPO_NAME", BuildEnvironmentVariable.builder().type(PLAINTEXT).value("veengu-service").build());
+                "IMAGE_REPO_NAME", BuildEnvironmentVariable.builder().type(PLAINTEXT).value("veengu-service").build()); // TODO replace with EcrRepository url
 
         BuildEnvironment buildEnvironment = BuildEnvironment.builder()
                 .buildImage(LinuxBuildImage.STANDARD_2_0)
