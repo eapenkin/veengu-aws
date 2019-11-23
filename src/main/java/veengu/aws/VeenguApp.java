@@ -3,9 +3,10 @@ package veengu.aws;
 import software.amazon.awscdk.core.App;
 
 public class VeenguApp {
-    public static void main(final String argv[]) {
+    public static void main(final String[] args) {
         App app = new App();
-        new PipelineStack(app, "PipelineStack", "scala-sandbox", "research/rest-api");
+        RepositoryStack repositoryStack = new RepositoryStack(app, "RepositoryStack", "scala-sandbox");
+        PipelineStack pipelineStack = new PipelineStack(app, "PipelineStack", repositoryStack.getRepository(), "research/rest-api");
         app.synth();
     }
 }

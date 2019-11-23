@@ -4,7 +4,6 @@ import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Stack;
 import software.amazon.awscdk.services.codebuild.*;
 import software.amazon.awscdk.services.codecommit.IRepository;
-import software.amazon.awscdk.services.codecommit.Repository;
 import software.amazon.awscdk.services.codepipeline.Artifact;
 import software.amazon.awscdk.services.codepipeline.Pipeline;
 import software.amazon.awscdk.services.codepipeline.StageProps;
@@ -21,14 +20,8 @@ import static software.amazon.awscdk.services.codepipeline.actions.CodeCommitTri
 
 public class PipelineStack extends Stack {
 
-    public PipelineStack(final Construct scope, final String id, String repositoryName, String branchName) {
+    public PipelineStack(final Construct scope, final String id, IRepository repository, String branchName) {
         super(scope, id, null);
-
-        ///////////////////////////////////////////////////////////////////////////
-        // GIT Repository
-        ///////////////////////////////////////////////////////////////////////////
-
-        IRepository repository = Repository.fromRepositoryName(this, "CodeRepository", repositoryName);
 
         ///////////////////////////////////////////////////////////////////////////
         // Build Project
@@ -52,7 +45,6 @@ public class PipelineStack extends Stack {
 
         Project codeBuildProject = Project.Builder
                 .create(this, "CodeBuilder")
-                .projectName("BuildProject")
                 .description("Code Builder created by AWS CDK")
                 .source(Source.codeCommit(repositorySource))
                 .environment(buildEnvironment)
@@ -121,7 +113,6 @@ public class PipelineStack extends Stack {
 
         Pipeline.Builder
                 .create(this, "CodePipeline")
-                .pipelineName("CodePipeline")
                 .stages(List.of(sourceStage, buildStage))
                 .build();
     }
