@@ -56,7 +56,7 @@ public class PipelineStack extends Stack {
         // Source Stage
         ///////////////////////////////////////////////////////////////////////////
 
-        Artifact sourceArtifact = Artifact.artifact("SourceArtifact");
+        Artifact sourceOutput = Artifact.artifact("SourceOutput");
 
         CodeCommitSourceAction sourceAction = CodeCommitSourceAction.Builder
                 .create()
@@ -64,7 +64,7 @@ public class PipelineStack extends Stack {
                 .repository(repository)
                 .branch(branchName)
                 .trigger(EVENTS)
-                .output(sourceArtifact)
+                .output(sourceOutput)
                 .build();
 
         StageProps sourceStage = StageProps.builder()
@@ -76,14 +76,14 @@ public class PipelineStack extends Stack {
         // Build Stage
         ///////////////////////////////////////////////////////////////////////////
 
-        Artifact buildArtifact = Artifact.artifact("BuildArtifact");
+        Artifact buildOutput = Artifact.artifact("BuildOutput");
 
         CodeBuildAction buildAction = CodeBuildAction.Builder
                 .create()
                 .actionName("CodeBuildAction")
-                .input(sourceArtifact)
                 .project(codeBuildProject)
-                .outputs(List.of(buildArtifact))
+                .input(sourceOutput)
+                .outputs(List.of(buildOutput))
                 .build();
 
         StageProps buildStage = StageProps.builder()
