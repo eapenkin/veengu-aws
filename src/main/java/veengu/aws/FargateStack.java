@@ -4,7 +4,6 @@ import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Stack;
 import software.amazon.awscdk.services.ec2.Vpc;
 import software.amazon.awscdk.services.ecr.IRepository;
-import software.amazon.awscdk.services.ecr.Repository;
 import software.amazon.awscdk.services.ecs.BaseService;
 import software.amazon.awscdk.services.ecs.Cluster;
 import software.amazon.awscdk.services.ecs.ContainerImage;
@@ -15,7 +14,7 @@ public class FargateStack extends Stack {
 
     private BaseService service;
 
-    public FargateStack(Construct scope, String id) {
+    public FargateStack(Construct scope, String id, IRepository repository) {
         super(scope, id);
 
         ///////////////////////////////////////////////////////////////////////////
@@ -24,18 +23,17 @@ public class FargateStack extends Stack {
 
         Vpc vpc = Vpc.Builder
                 .create(this, "Vpc")
+                .maxAzs(2)
                 .build();
 
         Cluster cluster = Cluster.Builder
-                .create(this, "EcsCluster")
+                .create(this, "FargateCluster")
                 .vpc(vpc)
                 .build();
 
         ///////////////////////////////////////////////////////////////////////////
         // Task Image
         ///////////////////////////////////////////////////////////////////////////
-
-        IRepository repository = Repository.fromRepositoryName(this, "EcrRepository", "veengu-service"); // TODO create repository and pass it as a parameter to PipelineStack
 
         ContainerImage image = ContainerImage.fromEcrRepository(repository);
 

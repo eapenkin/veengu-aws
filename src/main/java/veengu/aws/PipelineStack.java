@@ -3,7 +3,6 @@ package veengu.aws;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Stack;
 import software.amazon.awscdk.services.codebuild.*;
-import software.amazon.awscdk.services.codecommit.IRepository;
 import software.amazon.awscdk.services.codepipeline.Artifact;
 import software.amazon.awscdk.services.codepipeline.Pipeline;
 import software.amazon.awscdk.services.codepipeline.StageProps;
@@ -20,8 +19,12 @@ import static software.amazon.awscdk.services.codepipeline.actions.CodeCommitTri
 
 public class PipelineStack extends Stack {
 
-    public PipelineStack(final Construct scope, final String id, IRepository repository, String branchName) {
-        super(scope, id, null);
+    public PipelineStack(final Construct scope,
+                         final String id,
+                         final software.amazon.awscdk.services.codecommit.IRepository gitRepository,
+                         final String branchName,
+                         final software.amazon.awscdk.services.ecr.IRepository dockerRepository) {
+        super(scope, id);
 
         ///////////////////////////////////////////////////////////////////////////
         // Build Project
@@ -29,14 +32,13 @@ public class PipelineStack extends Stack {
 
         CodeCommitSourceProps repositorySource = CodeCommitSourceProps.builder()
                 .cloneDepth(1)
-                .repository(repository)
+                .repository(gitRepository)
                 .build();
 
         Map<String, BuildEnvironmentVariable> environmentVariables = Map.of(
                 "AWS_DEFAULT_REGION", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(getRegion()).build(),
-                "AWS_ACCOUNT_ID", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(getAccount()).build(),
-                "IMAGE_TAG", BuildEnvironmentVariable.builder().type(PLAINTEXT).value("latest").build(),
-                "IMAGE_REPO_NAME", BuildEnvironmentVariable.builder().type(PLAINTEXT).value("veengu-service").build()); // TODO replace with EcrRepository url
+                "REPOSITORY_NAME", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(dockerRepository.getRepositoryName()).build(),
+                "REPOSITORY_URI", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(getAccount() + ".dkr.ecr." + getRegion() + ".amazonaws.com").build());
 
         BuildEnvironment buildEnvironment = BuildEnvironment.builder()
                 .buildImage(LinuxBuildImage.STANDARD_2_0)
@@ -52,6 +54,8 @@ public class PipelineStack extends Stack {
                 .cache(Cache.local(SOURCE, DOCKER_LAYER, CUSTOM))
                 .build();
 
+        dockerRepository.grantPullPush(codeBuildProject);
+
         ///////////////////////////////////////////////////////////////////////////
         // Source Stage
         ///////////////////////////////////////////////////////////////////////////
@@ -61,7 +65,7 @@ public class PipelineStack extends Stack {
         CodeCommitSourceAction sourceAction = CodeCommitSourceAction.Builder
                 .create()
                 .actionName("CodeCommitAction")
-                .repository(repository)
+                .repository(gitRepository)
                 .branch(branchName)
                 .trigger(EVENTS)
                 .output(sourceOutput)
@@ -95,23 +99,23 @@ public class PipelineStack extends Stack {
         // Deploy Stage
         ///////////////////////////////////////////////////////////////////////////
 
-        /*EcsDeployAction deployAction = EcsDeployAction.Builder
-                .create()
-                .actionName("ECSDeployAction")
-                .service(baseService)
-                .input(buildArtifact)
-                .build();
-
-        StageProps deployStage = StageProps.builder()
-                .stageName("DeployStage")
-                .actions(List.of(deployAction))
-                .build();*/
+//        EcsDeployAction deployAction = EcsDeployAction.Builder
+//                .create()
+//                .actionName("ECSDeployAction")
+//                .service(fargateService)
+//                .input(buildOutput)
+//                .build();
+//
+//        StageProps deployStage = StageProps.builder()
+//                .stageName("DeployStage")
+//                .actions(List.of(deployAction))
+//                .build();
 
         ///////////////////////////////////////////////////////////////////////////
         // Code Pipeline
         ///////////////////////////////////////////////////////////////////////////
 
-        Pipeline.Builder
+        Pipeline codePipeline = Pipeline.Builder
                 .create(this, "CodePipeline")
                 .stages(List.of(sourceStage, buildStage))
                 .build();

@@ -8,7 +8,9 @@ public class VeenguAppTest {
     @Test
     public void pipelineStack() {
         App app = new App();
-        RepositoryStack repositoryStack = new RepositoryStack(app, "test-repo", "test-repo");
-        PipelineStack pipelineStack = new PipelineStack(app, "test-pipe", repositoryStack.getRepository(), "master");
+        GitRepositoryStack gitRepositoryStack = new GitRepositoryStack(app, "test-git", "test-git");
+        DockerRepositoryStack dockerRepositoryStack = new DockerRepositoryStack(app, "test-docker", "test-docker");
+        FargateStack fargateStack = new FargateStack(app, "test-fargate", dockerRepositoryStack.getRepository());
+        PipelineStack pipelineStack = new PipelineStack(app, "test-pipe", gitRepositoryStack.getRepository(), "master", dockerRepositoryStack.getRepository());
     }
 }
