@@ -11,6 +11,10 @@ import software.amazon.awscdk.services.ecs.patterns.ApplicationLoadBalancedFarga
 import software.amazon.awscdk.services.ecs.patterns.ApplicationLoadBalancedTaskImageOptions;
 import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationLoadBalancer;
 
+import java.util.Map;
+
+import static java.lang.String.valueOf;
+
 public class FargateCluster extends Stack {
 
     private BaseService service;
@@ -43,9 +47,13 @@ public class FargateCluster extends Stack {
 
         ContainerImage image = ContainerImage.fromEcrRepository(registry);
 
+        Map<String, String> environmentVariables = Map.of(
+                "CONTAINER_PORT", valueOf(containerPort));
+
         ApplicationLoadBalancedTaskImageOptions taskImage = ApplicationLoadBalancedTaskImageOptions.builder()
                 .image(image)
                 .containerPort(containerPort)
+                .environment(environmentVariables)
                 .build();
 
         ///////////////////////////////////////////////////////////////////////////
