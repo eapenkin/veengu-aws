@@ -3,6 +3,7 @@ package veengu.aws;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Stack;
 import software.amazon.awscdk.services.codebuild.*;
+import software.amazon.awscdk.services.codecommit.IRepository;
 import software.amazon.awscdk.services.codepipeline.Artifact;
 import software.amazon.awscdk.services.codepipeline.Pipeline;
 import software.amazon.awscdk.services.codepipeline.StageProps;
@@ -21,8 +22,8 @@ public class PublishPipeline extends Stack {
 
     public PublishPipeline(final Construct scope,
                            final String id,
-                           final software.amazon.awscdk.services.codecommit.IRepository gitRepository,
                            final String branchName,
+                           final IRepository gitRepository,
                            final software.amazon.awscdk.services.ecr.IRepository dockerRegistry) {
         super(scope, id);
 

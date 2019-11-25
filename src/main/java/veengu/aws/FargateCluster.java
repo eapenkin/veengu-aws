@@ -9,10 +9,13 @@ import software.amazon.awscdk.services.ecs.Cluster;
 import software.amazon.awscdk.services.ecs.ContainerImage;
 import software.amazon.awscdk.services.ecs.patterns.ApplicationLoadBalancedFargateService;
 import software.amazon.awscdk.services.ecs.patterns.ApplicationLoadBalancedTaskImageOptions;
+import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationLoadBalancer;
 
 public class FargateCluster extends Stack {
 
     private BaseService service;
+
+    private ApplicationLoadBalancer loadBalancer;
 
     public FargateCluster(Construct scope, String id, IRepository registry) {
         super(scope, id);
@@ -53,9 +56,15 @@ public class FargateCluster extends Stack {
                 .build();
 
         this.service = fargateService.getService();
+        this.loadBalancer = fargateService.getLoadBalancer();
+
     }
 
     public BaseService getService() {
         return service;
+    }
+
+    public ApplicationLoadBalancer getLoadBalancer() {
+        return loadBalancer;
     }
 }
