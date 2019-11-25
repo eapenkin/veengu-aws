@@ -2,7 +2,7 @@ package veengu.aws;
 
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Stack;
-import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationLoadBalancer;
+import software.amazon.awscdk.services.elasticloadbalancingv2.ILoadBalancerV2;
 import software.amazon.awscdk.services.route53.*;
 import software.amazon.awscdk.services.route53.targets.LoadBalancerTarget;
 
@@ -12,7 +12,7 @@ public class DomainName extends Stack {
                       final String id,
                       final String zoneName,
                       final String zoneId,
-                      final ApplicationLoadBalancer loadBalancer) {
+                      final ILoadBalancerV2 loadBalancer) {
         super(scope, id);
 
         ///////////////////////////////////////////////////////////////////////////
