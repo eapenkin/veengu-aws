@@ -18,18 +18,20 @@ import java.util.Map;
 
 import static java.lang.String.valueOf;
 import static software.amazon.awscdk.services.codebuild.BuildEnvironmentVariableType.PLAINTEXT;
+import static software.amazon.awscdk.services.codebuild.Cache.local;
 import static software.amazon.awscdk.services.codebuild.LocalCacheMode.*;
+import static software.amazon.awscdk.services.codebuild.Source.codeCommit;
 import static software.amazon.awscdk.services.codepipeline.actions.CodeCommitTrigger.EVENTS;
 
 
 public class PublishPipeline extends Stack {
 
-    private static BuildEnvironmentVariable value(String value) {
+    private static BuildEnvironmentVariable plaintext(String value) {
         return BuildEnvironmentVariable.builder().type(PLAINTEXT).value(value).build();
     }
 
-    private static BuildEnvironmentVariable value(int value) {
-        return BuildEnvironmentVariable.builder().type(PLAINTEXT).value(valueOf(value)).build();
+    private static BuildEnvironmentVariable plaintext(int value) {
+        return plaintext(valueOf(value));
     }
 
     public PublishPipeline(final Construct scope,
@@ -57,18 +59,18 @@ public class PublishPipeline extends Stack {
                 .build();
 
         Map<String, BuildEnvironmentVariable> environmentVariables = Map.of(
-                "AWS_DEFAULT_REGION", value(getRegion()),
-                "CONTAINER_PORT", value(containerPort),
-                "CONTAINER_NAME", value(taskDefinition.getDefaultContainer().getContainerName()),
-                "IMAGE_NAME", value(dockerRegistry.getRepositoryName()),
-                "REGISTRY_HOST", value(getAccount() + ".dkr.ecr." + getRegion() + ".amazonaws.com"));
+                "AWS_DEFAULT_REGION", plaintext(getRegion()),
+                "CONTAINER_PORT", plaintext(containerPort),
+                "CONTAINER_NAME", plaintext(taskDefinition.getDefaultContainer().getContainerName()),
+                "IMAGE_NAME", plaintext(dockerRegistry.getRepositoryName()),
+                "REGISTRY_HOST", plaintext(getAccount() + ".dkr.ecr." + getRegion() + ".amazonaws.com"));
 
         Project buildProject = Project.Builder
                 .create(this, "CodeBuilder")
-                .source(Source.codeCommit(repositorySource))
+                .source(codeCommit(repositorySource))
                 .environment(buildEnvironment)
                 .environmentVariables(environmentVariables)
-                .cache(Cache.local(SOURCE, DOCKER_LAYER, CUSTOM))
+                .cache(local(SOURCE, DOCKER_LAYER, CUSTOM))
                 .build();
 
         ///////////////////////////////////////////////////////////////////////////
