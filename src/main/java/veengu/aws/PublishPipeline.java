@@ -9,6 +9,9 @@ import software.amazon.awscdk.services.codepipeline.Pipeline;
 import software.amazon.awscdk.services.codepipeline.StageProps;
 import software.amazon.awscdk.services.codepipeline.actions.CodeBuildAction;
 import software.amazon.awscdk.services.codepipeline.actions.CodeCommitSourceAction;
+import software.amazon.awscdk.services.codepipeline.actions.EcsDeployAction;
+import software.amazon.awscdk.services.ecs.BaseService;
+import software.amazon.awscdk.services.ecs.TaskDefinition;
 
 import java.util.List;
 import java.util.Map;
@@ -26,7 +29,9 @@ public class PublishPipeline extends Stack {
                            final String branchName,
                            final int containerPort,
                            final IRepository gitRepository,
-                           final software.amazon.awscdk.services.ecr.IRepository dockerRegistry) {
+                           final software.amazon.awscdk.services.ecr.IRepository dockerRegistry,
+                           final BaseService fargateService,
+                           final TaskDefinition taskDefinition) {
         super(scope, id);
 
         ///////////////////////////////////////////////////////////////////////////
@@ -46,6 +51,7 @@ public class PublishPipeline extends Stack {
         Map<String, BuildEnvironmentVariable> environmentVariables = Map.of(
                 "AWS_DEFAULT_REGION", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(getRegion()).build(),
                 "CONTAINER_PORT", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(valueOf(containerPort)).build(),
+                "CONTAINER_NAME", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(taskDefinition.getDefaultContainer().getContainerName()).build(),
                 "IMAGE_NAME", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(dockerRegistry.getRepositoryName()).build(),
                 "REGISTRY_HOST", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(getAccount() + ".dkr.ecr." + getRegion() + ".amazonaws.com").build());
 
@@ -56,8 +62,6 @@ public class PublishPipeline extends Stack {
                 .environmentVariables(environmentVariables)
                 .cache(Cache.local(SOURCE, DOCKER_LAYER, CUSTOM))
                 .build();
-
-        dockerRegistry.grantPullPush(buildProject);
 
         ///////////////////////////////////////////////////////////////////////////
         // Source Stage
@@ -102,17 +106,17 @@ public class PublishPipeline extends Stack {
         // Deploy Stage
         ///////////////////////////////////////////////////////////////////////////
 
-//        EcsDeployAction deployAction = EcsDeployAction.Builder
-//                .create()
-//                .actionName("ECSDeployAction")
-//                .service(fargateService)
-//                .input(buildOutput)
-//                .build();
-//
-//        StageProps deployStage = StageProps.builder()
-//                .stageName("DeployStage")
-//                .actions(List.of(deployAction))
-//                .build();
+        EcsDeployAction deployAction = EcsDeployAction.Builder
+                .create()
+                .actionName("ECSDeployAction")
+                .service(fargateService)
+                .input(buildOutput)
+                .build();
+
+        StageProps deployStage = StageProps.builder()
+                .stageName("DeployStage")
+                .actions(List.of(deployAction))
+                .build();
 
         ///////////////////////////////////////////////////////////////////////////
         // Code Pipeline
@@ -120,7 +124,14 @@ public class PublishPipeline extends Stack {
 
         Pipeline.Builder
                 .create(this, "CodePipeline")
-                .stages(List.of(sourceStage, buildStage))
+                .stages(List.of(sourceStage, buildStage, deployStage))
                 .build();
+
+        ///////////////////////////////////////////////////////////////////////////
+        // Registry Grants
+        ///////////////////////////////////////////////////////////////////////////
+
+        dockerRegistry.grantPullPush(buildProject);
+        dockerRegistry.grantPull(taskDefinition.getExecutionRole());
     }
 }
