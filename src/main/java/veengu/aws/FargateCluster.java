@@ -5,10 +5,9 @@ import software.amazon.awscdk.core.Stack;
 import software.amazon.awscdk.services.ec2.Vpc;
 import software.amazon.awscdk.services.ecr.IRepository;
 import software.amazon.awscdk.services.ecr.Repository;
-import software.amazon.awscdk.services.ecs.BaseService;
 import software.amazon.awscdk.services.ecs.Cluster;
 import software.amazon.awscdk.services.ecs.ContainerImage;
-import software.amazon.awscdk.services.ecs.TaskDefinition;
+import software.amazon.awscdk.services.ecs.FargateService;
 import software.amazon.awscdk.services.ecs.patterns.ApplicationLoadBalancedFargateService;
 import software.amazon.awscdk.services.ecs.patterns.ApplicationLoadBalancedTaskImageOptions;
 import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationLoadBalancer;
@@ -22,11 +21,9 @@ public class FargateCluster extends Stack {
 
     private static final String AMAZON_LINUX = "arn:aws:ecr:us-west-2:137112412989:repository/amazonlinux";
 
-    private BaseService service;
+    private FargateService service;
 
-    private ApplicationLoadBalancer loadBalancer;
-
-    private TaskDefinition taskDefinition;
+    private ApplicationLoadBalancer balancer;
 
     public FargateCluster(final Construct scope,
                           final String id,
@@ -79,19 +76,15 @@ public class FargateCluster extends Stack {
                 .build();
 
         this.service = fargateService.getService();
-        this.loadBalancer = fargateService.getLoadBalancer();
-        this.taskDefinition = fargateService.getTaskDefinition();
+        this.balancer = fargateService.getLoadBalancer();
     }
 
-    public BaseService getService() {
+    public FargateService getService() {
         return service;
     }
 
-    public ApplicationLoadBalancer getLoadBalancer() {
-        return loadBalancer;
+    public ApplicationLoadBalancer getBalancer() {
+        return balancer;
     }
 
-    public TaskDefinition getTaskDefinition() {
-        return taskDefinition;
-    }
 }

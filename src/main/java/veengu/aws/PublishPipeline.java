@@ -10,8 +10,7 @@ import software.amazon.awscdk.services.codepipeline.StageProps;
 import software.amazon.awscdk.services.codepipeline.actions.CodeBuildAction;
 import software.amazon.awscdk.services.codepipeline.actions.CodeCommitSourceAction;
 import software.amazon.awscdk.services.codepipeline.actions.EcsDeployAction;
-import software.amazon.awscdk.services.ecs.BaseService;
-import software.amazon.awscdk.services.ecs.TaskDefinition;
+import software.amazon.awscdk.services.ecs.FargateService;
 
 import java.util.List;
 import java.util.Map;
@@ -40,8 +39,7 @@ public class PublishPipeline extends Stack {
                            final int containerPort,
                            final IRepository gitRepository,
                            final software.amazon.awscdk.services.ecr.IRepository dockerRegistry,
-                           final BaseService fargateService,
-                           final TaskDefinition taskDefinition) {
+                           final FargateService fargateService) {
         super(scope, id);
 
         ///////////////////////////////////////////////////////////////////////////
@@ -61,7 +59,7 @@ public class PublishPipeline extends Stack {
         Map<String, BuildEnvironmentVariable> environmentVariables = Map.of(
                 "AWS_DEFAULT_REGION", plaintext(getRegion()),
                 "CONTAINER_PORT", plaintext(containerPort),
-                "CONTAINER_NAME", plaintext(taskDefinition.getDefaultContainer().getContainerName()),
+                "CONTAINER_NAME", plaintext(fargateService.getTaskDefinition().getDefaultContainer().getContainerName()),
                 "IMAGE_NAME", plaintext(dockerRegistry.getRepositoryName()),
                 "REGISTRY_HOST", plaintext(getAccount() + ".dkr.ecr." + getRegion() + ".amazonaws.com"));
 
@@ -142,6 +140,6 @@ public class PublishPipeline extends Stack {
         ///////////////////////////////////////////////////////////////////////////
 
         dockerRegistry.grantPullPush(buildProject);
-        dockerRegistry.grantPull(taskDefinition.getExecutionRole());
+        dockerRegistry.grantPull(fargateService.getTaskDefinition().getExecutionRole());
     }
 }
