@@ -24,6 +24,14 @@ import static software.amazon.awscdk.services.codepipeline.actions.CodeCommitTri
 
 public class PublishPipeline extends Stack {
 
+    private static BuildEnvironmentVariable value(String value) {
+        return BuildEnvironmentVariable.builder().type(PLAINTEXT).value(value).build();
+    }
+
+    private static BuildEnvironmentVariable value(int value) {
+        return BuildEnvironmentVariable.builder().type(PLAINTEXT).value(valueOf(value)).build();
+    }
+
     public PublishPipeline(final Construct scope,
                            final String id,
                            final String branchName,
@@ -49,11 +57,11 @@ public class PublishPipeline extends Stack {
                 .build();
 
         Map<String, BuildEnvironmentVariable> environmentVariables = Map.of(
-                "AWS_DEFAULT_REGION", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(getRegion()).build(),
-                "CONTAINER_PORT", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(valueOf(containerPort)).build(),
-                "CONTAINER_NAME", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(taskDefinition.getDefaultContainer().getContainerName()).build(),
-                "IMAGE_NAME", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(dockerRegistry.getRepositoryName()).build(),
-                "REGISTRY_HOST", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(getAccount() + ".dkr.ecr." + getRegion() + ".amazonaws.com").build());
+                "AWS_DEFAULT_REGION", value(getRegion()),
+                "CONTAINER_PORT", value(containerPort),
+                "CONTAINER_NAME", value(taskDefinition.getDefaultContainer().getContainerName()),
+                "IMAGE_NAME", value(dockerRegistry.getRepositoryName()),
+                "REGISTRY_HOST", value(getAccount() + ".dkr.ecr." + getRegion() + ".amazonaws.com"));
 
         Project buildProject = Project.Builder
                 .create(this, "CodeBuilder")
