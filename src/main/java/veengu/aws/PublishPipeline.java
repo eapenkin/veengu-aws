@@ -13,6 +13,7 @@ import software.amazon.awscdk.services.codepipeline.actions.CodeCommitSourceActi
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.String.valueOf;
 import static software.amazon.awscdk.services.codebuild.BuildEnvironmentVariableType.PLAINTEXT;
 import static software.amazon.awscdk.services.codebuild.LocalCacheMode.*;
 import static software.amazon.awscdk.services.codepipeline.actions.CodeCommitTrigger.EVENTS;
@@ -44,7 +45,7 @@ public class PublishPipeline extends Stack {
 
         Map<String, BuildEnvironmentVariable> environmentVariables = Map.of(
                 "AWS_DEFAULT_REGION", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(getRegion()).build(),
-                "CONTAINER_PORT", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(containerPort).build(),
+                "CONTAINER_PORT", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(valueOf(containerPort)).build(),
                 "IMAGE_NAME", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(dockerRegistry.getRepositoryName()).build(),
                 "REGISTRY_HOST", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(getAccount() + ".dkr.ecr." + getRegion() + ".amazonaws.com").build());
 
