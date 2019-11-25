@@ -39,7 +39,6 @@ public class FargateCluster extends Stack {
 
         Vpc vpc = Vpc.Builder
                 .create(this, "Vpc")
-                .maxAzs(2)
                 .build();
 
         Cluster cluster = Cluster.Builder
