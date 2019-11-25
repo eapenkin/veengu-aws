@@ -5,9 +5,9 @@ import software.amazon.awscdk.core.App;
 public class VeenguApp {
 
     public static final int CONTAINER_PORT = 8080;
-    public static final String REGISTRY_NAME = "scala-sandbox";
+    public static final String REGISTRY_NAME = "veengu-back";
     public static final String REPOSITORY_NAME = "scala-sandbox";
-    public static final String BRANCH_NAME = "research/rest-api";
+    public static final String BRANCH_NAME = "develop";
     public static final String ZONE_NAME = "veengu.xyz";
     public static final String ZONE_ID = "Z3K66451X409D1";
 
