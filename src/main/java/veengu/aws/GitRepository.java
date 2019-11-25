@@ -5,11 +5,11 @@ import software.amazon.awscdk.core.Stack;
 import software.amazon.awscdk.services.codecommit.IRepository;
 import software.amazon.awscdk.services.codecommit.Repository;
 
-public class GitRepositoryStack extends Stack {
+public class GitRepository extends Stack {
 
     private IRepository repository;
 
-    public GitRepositoryStack(final Construct scope, final String id, final String name) {
+    public GitRepository(final Construct scope, final String id, final String name) {
         super(scope, id);
         this.repository = Repository.fromRepositoryName(this, "GitRepository", name);
     }

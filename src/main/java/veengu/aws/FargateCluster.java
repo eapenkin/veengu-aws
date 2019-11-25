@@ -10,11 +10,11 @@ import software.amazon.awscdk.services.ecs.ContainerImage;
 import software.amazon.awscdk.services.ecs.patterns.ApplicationLoadBalancedFargateService;
 import software.amazon.awscdk.services.ecs.patterns.ApplicationLoadBalancedTaskImageOptions;
 
-public class FargateStack extends Stack {
+public class FargateCluster extends Stack {
 
     private BaseService service;
 
-    public FargateStack(Construct scope, String id, IRepository repository) {
+    public FargateCluster(Construct scope, String id, IRepository registry) {
         super(scope, id);
 
         ///////////////////////////////////////////////////////////////////////////
@@ -35,7 +35,7 @@ public class FargateStack extends Stack {
         // Task Image
         ///////////////////////////////////////////////////////////////////////////
 
-        ContainerImage image = ContainerImage.fromEcrRepository(repository);
+        ContainerImage image = ContainerImage.fromEcrRepository(registry);
 
         ApplicationLoadBalancedTaskImageOptions taskImage = ApplicationLoadBalancedTaskImageOptions.builder()
                 .image(image)

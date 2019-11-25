@@ -17,13 +17,13 @@ import static software.amazon.awscdk.services.codebuild.LocalCacheMode.*;
 import static software.amazon.awscdk.services.codepipeline.actions.CodeCommitTrigger.EVENTS;
 
 
-public class PipelineStack extends Stack {
+public class PublishPipeline extends Stack {
 
-    public PipelineStack(final Construct scope,
-                         final String id,
-                         final software.amazon.awscdk.services.codecommit.IRepository gitRepository,
-                         final String branchName,
-                         final software.amazon.awscdk.services.ecr.IRepository dockerRepository) {
+    public PublishPipeline(final Construct scope,
+                           final String id,
+                           final software.amazon.awscdk.services.codecommit.IRepository gitRepository,
+                           final String branchName,
+                           final software.amazon.awscdk.services.ecr.IRepository dockerRegistry) {
         super(scope, id);
 
         ///////////////////////////////////////////////////////////////////////////
@@ -35,26 +35,25 @@ public class PipelineStack extends Stack {
                 .repository(gitRepository)
                 .build();
 
-        Map<String, BuildEnvironmentVariable> environmentVariables = Map.of(
-                "AWS_DEFAULT_REGION", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(getRegion()).build(),
-                "REPOSITORY_NAME", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(dockerRepository.getRepositoryName()).build(),
-                "REPOSITORY_URI", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(getAccount() + ".dkr.ecr." + getRegion() + ".amazonaws.com").build());
-
         BuildEnvironment buildEnvironment = BuildEnvironment.builder()
                 .buildImage(LinuxBuildImage.STANDARD_2_0)
                 .privileged(true)
                 .build();
 
-        Project codeBuildProject = Project.Builder
+        Map<String, BuildEnvironmentVariable> environmentVariables = Map.of(
+                "AWS_DEFAULT_REGION", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(getRegion()).build(),
+                "IMAGE_NAME", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(dockerRegistry.getRepositoryName()).build(),
+                "REGISTRY_HOST", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(getAccount() + ".dkr.ecr." + getRegion() + ".amazonaws.com").build());
+
+        Project buildProject = Project.Builder
                 .create(this, "CodeBuilder")
-                .description("Code Builder created by AWS CDK")
                 .source(Source.codeCommit(repositorySource))
                 .environment(buildEnvironment)
                 .environmentVariables(environmentVariables)
                 .cache(Cache.local(SOURCE, DOCKER_LAYER, CUSTOM))
                 .build();
 
-        dockerRepository.grantPullPush(codeBuildProject);
+        dockerRegistry.grantPullPush(buildProject);
 
         ///////////////////////////////////////////////////////////////////////////
         // Source Stage
@@ -85,7 +84,7 @@ public class PipelineStack extends Stack {
         CodeBuildAction buildAction = CodeBuildAction.Builder
                 .create()
                 .actionName("CodeBuildAction")
-                .project(codeBuildProject)
+                .project(buildProject)
                 .input(sourceOutput)
                 .outputs(List.of(buildOutput))
                 .build();
@@ -115,7 +114,7 @@ public class PipelineStack extends Stack {
         // Code Pipeline
         ///////////////////////////////////////////////////////////////////////////
 
-        Pipeline codePipeline = Pipeline.Builder
+        Pipeline.Builder
                 .create(this, "CodePipeline")
                 .stages(List.of(sourceStage, buildStage))
                 .build();
