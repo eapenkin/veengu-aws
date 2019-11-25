@@ -19,8 +19,6 @@ public class VeenguApp {
         // Stacks Dependencies
         ///////////////////////////////////////////////////////////////////////////
 
-        publishPipeline.addDependency(gitRepository);
-        publishPipeline.addDependency(dockerRegistry);
         fargateCluster.addDependency(publishPipeline);
 
         app.synth();
