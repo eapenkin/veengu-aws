@@ -20,8 +20,8 @@ public class VeenguApp {
 
         GitRepository gitRepository = new GitRepository(app, "GitRepository", REPOSITORY_NAME);
         DockerRegistry dockerRegistry = new DockerRegistry(app, "DockerRegistry", REGISTRY_NAME);
-        PublishPipeline publishPipeline = new PublishPipeline(app, "PublishPipeline", BRANCH_NAME, gitRepository.getRepository(), dockerRegistry.getRegistry());
-        FargateCluster fargateCluster = new FargateCluster(app, "FargateCluster", dockerRegistry.getRegistry());
+        PublishPipeline publishPipeline = new PublishPipeline(app, "PublishPipeline", BRANCH_NAME, CONTAINER_PORT, gitRepository.getRepository(), dockerRegistry.getRegistry());
+        FargateCluster fargateCluster = new FargateCluster(app, "FargateCluster", CONTAINER_PORT, dockerRegistry.getRegistry());
         DomainName domainName = new DomainName(app, "DomainName", ZONE_NAME, ZONE_ID, fargateCluster.getLoadBalancer());
 
         ///////////////////////////////////////////////////////////////////////////

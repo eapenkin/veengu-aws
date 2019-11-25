@@ -23,6 +23,7 @@ public class PublishPipeline extends Stack {
     public PublishPipeline(final Construct scope,
                            final String id,
                            final String branchName,
+                           final int containerPort,
                            final IRepository gitRepository,
                            final software.amazon.awscdk.services.ecr.IRepository dockerRegistry) {
         super(scope, id);
@@ -43,6 +44,7 @@ public class PublishPipeline extends Stack {
 
         Map<String, BuildEnvironmentVariable> environmentVariables = Map.of(
                 "AWS_DEFAULT_REGION", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(getRegion()).build(),
+                "CONTAINER_PORT", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(containerPort).build(),
                 "IMAGE_NAME", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(dockerRegistry.getRepositoryName()).build(),
                 "REGISTRY_HOST", BuildEnvironmentVariable.builder().type(PLAINTEXT).value(getAccount() + ".dkr.ecr." + getRegion() + ".amazonaws.com").build());
 

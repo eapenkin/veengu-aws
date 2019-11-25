@@ -9,8 +9,11 @@ public class GitRepository extends Stack {
 
     private IRepository repository;
 
-    public GitRepository(final Construct scope, final String id, final String name) {
+    public GitRepository(final Construct scope,
+                         final String id,
+                         final String name) {
         super(scope, id);
+
         this.repository = Repository.fromRepositoryName(this, "GitRepository", name);
     }
 

@@ -17,7 +17,10 @@ public class FargateCluster extends Stack {
 
     private ApplicationLoadBalancer loadBalancer;
 
-    public FargateCluster(Construct scope, String id, IRepository registry) {
+    public FargateCluster(final Construct scope,
+                          final String id,
+                          final int containerPort,
+                          final IRepository registry) {
         super(scope, id);
 
         ///////////////////////////////////////////////////////////////////////////
@@ -42,7 +45,7 @@ public class FargateCluster extends Stack {
 
         ApplicationLoadBalancedTaskImageOptions taskImage = ApplicationLoadBalancedTaskImageOptions.builder()
                 .image(image)
-                .containerPort(8080)
+                .containerPort(containerPort)
                 .build();
 
         ///////////////////////////////////////////////////////////////////////////

@@ -8,7 +8,11 @@ import software.amazon.awscdk.services.route53.targets.LoadBalancerTarget;
 
 public class DomainName extends Stack {
 
-    public DomainName(Construct scope, String id, String zoneName, String zoneId, ApplicationLoadBalancer loadBalancer) {
+    public DomainName(final Construct scope,
+                      final String id,
+                      final String zoneName,
+                      final String zoneId,
+                      final ApplicationLoadBalancer loadBalancer) {
         super(scope, id);
 
         ///////////////////////////////////////////////////////////////////////////
@@ -20,10 +24,10 @@ public class DomainName extends Stack {
                 .zoneName(zoneName)
                 .build();
 
-        IHostedZone hostedZone = HostedZone.fromHostedZoneAttributes(this, "VeenguZone", zoneAttributes);
+        IHostedZone hostedZone = HostedZone.fromHostedZoneAttributes(this, "HostedZone", zoneAttributes);
 
         ///////////////////////////////////////////////////////////////////////////
-        // DNS Record
+        // Alias Record
         ///////////////////////////////////////////////////////////////////////////
 
         ARecord.Builder

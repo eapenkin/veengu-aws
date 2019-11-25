@@ -13,7 +13,9 @@ public class DockerRegistry extends Stack {
 
     private Repository registry;
 
-    public DockerRegistry(Construct scope, String id, String name) {
+    public DockerRegistry(final Construct scope,
+                          final String id,
+                          final String name) {
         super(scope, id);
 
         LifecycleRule oneUntaggedImage = LifecycleRule.builder()
