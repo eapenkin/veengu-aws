@@ -14,6 +14,6 @@ public class VeenguAppTest {
 
         GitRepository gitRepository = new GitRepository(app, "test-git", "test-git");
         DockerRegistry dockerRegistry = new DockerRegistry(app, "test-docker", "test-docker");
-        PublishPipeline publishPipeline = new PublishPipeline(app, "test-pipe", "test-branch", 8080, gitRepository.getRepository(), dockerRegistry.getRegistry(), fargateCluster.getService());
+        ContainerPipeline containerPipeline = new ContainerPipeline(app, "test-pipe", "test-branch", 8080, gitRepository.getRepository(), dockerRegistry.getRegistry(), fargateCluster.getService());
     }
 }
