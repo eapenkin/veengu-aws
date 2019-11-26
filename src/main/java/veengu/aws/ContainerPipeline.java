@@ -63,6 +63,8 @@ public class ContainerPipeline extends Stack {
                 "IMAGE_NAME", plaintext(dockerRegistry.getRepositoryName()),
                 "REGISTRY_HOST", plaintext(getAccount() + ".dkr.ecr." + getRegion() + ".amazonaws.com"));
 
+        // TODO test with BitBucket
+
         Project buildProject = Project.Builder
                 .create(this, "CodeBuilder")
                 .source(codeCommit(repositorySource))
