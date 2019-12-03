@@ -14,6 +14,7 @@ import software.amazon.awscdk.services.ecs.FargateService;
 
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import static java.lang.String.valueOf;
 import static software.amazon.awscdk.services.codebuild.BuildEnvironmentVariableType.PLAINTEXT;
@@ -64,12 +65,12 @@ public class ContainerPipeline extends Construct {
                 .privileged(true)
                 .build();
 
-        Map<String, BuildEnvironmentVariable> environmentVariables = Map.of(
+        Map<String, BuildEnvironmentVariable> environmentVariables = new TreeMap<>(Map.of(
                 "AWS_DEFAULT_REGION", plaintext(region),
                 "CONTAINER_PORT", plaintext(containerPort),
                 "CONTAINER_NAME", plaintext(fargateService.getTaskDefinition().getDefaultContainer().getContainerName()),
                 "IMAGE_NAME", plaintext(dockerRegistry.getRepositoryName()),
-                "REGISTRY_HOST", plaintext(account + ".dkr.ecr." + region + ".amazonaws.com"));
+                "REGISTRY_HOST", plaintext(account + ".dkr.ecr." + region + ".amazonaws.com")));
 
         // TODO test with BitBucket
 
