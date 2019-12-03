@@ -23,7 +23,7 @@ import static software.amazon.awscdk.services.codebuild.Source.codeCommit;
 import static software.amazon.awscdk.services.codepipeline.actions.CodeCommitTrigger.EVENTS;
 
 
-public class ContainerPipeline extends Stack {
+public class ContainerPipeline extends Construct {
 
     private static BuildEnvironmentVariable plaintext(String value) {
         return BuildEnvironmentVariable.builder().type(PLAINTEXT).value(value).build();
@@ -39,7 +39,9 @@ public class ContainerPipeline extends Stack {
                              final int containerPort,
                              final IRepository gitRepository,
                              final software.amazon.awscdk.services.ecr.IRepository dockerRegistry,
-                             final FargateService fargateService) {
+                             final FargateService fargateService,
+                             String region,
+                             String account) {
         super(scope, id);
 
         ///////////////////////////////////////////////////////////////////////////
@@ -57,11 +59,11 @@ public class ContainerPipeline extends Stack {
                 .build();
 
         Map<String, BuildEnvironmentVariable> environmentVariables = Map.of(
-                "AWS_DEFAULT_REGION", plaintext(getRegion()),
+                "AWS_DEFAULT_REGION", plaintext(region),
                 "CONTAINER_PORT", plaintext(containerPort),
                 "CONTAINER_NAME", plaintext(fargateService.getTaskDefinition().getDefaultContainer().getContainerName()),
                 "IMAGE_NAME", plaintext(dockerRegistry.getRepositoryName()),
-                "REGISTRY_HOST", plaintext(getAccount() + ".dkr.ecr." + getRegion() + ".amazonaws.com"));
+                "REGISTRY_HOST", plaintext(account + ".dkr.ecr." + region + ".amazonaws.com"));
 
         // TODO test with BitBucket
 

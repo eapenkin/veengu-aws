@@ -9,7 +9,7 @@ import software.amazon.awscdk.services.ecr.TagStatus;
 
 import java.util.List;
 
-public class DockerRegistry extends Stack {
+public class DockerRegistry extends Construct {
 
     private Repository registry;
 

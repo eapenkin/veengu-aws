@@ -6,7 +6,7 @@ import software.amazon.awscdk.services.elasticloadbalancingv2.ILoadBalancerV2;
 import software.amazon.awscdk.services.route53.*;
 import software.amazon.awscdk.services.route53.targets.LoadBalancerTarget;
 
-public class DomainName extends Stack {
+public class DomainName extends Construct {
 
     public DomainName(final Construct scope,
                       final String id,

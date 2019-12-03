@@ -5,7 +5,7 @@ import software.amazon.awscdk.core.Stack;
 import software.amazon.awscdk.services.codecommit.IRepository;
 import software.amazon.awscdk.services.codecommit.Repository;
 
-public class GitRepository extends Stack {
+public class GitRepository extends Construct {
 
     private IRepository repository;
 
