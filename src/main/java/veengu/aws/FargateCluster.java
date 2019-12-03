@@ -16,6 +16,7 @@ import java.util.Map;
 import static java.lang.String.valueOf;
 import static software.amazon.awscdk.core.Duration.minutes;
 
+@Deprecated(forRemoval = true)
 public class FargateCluster extends Construct {
 
     private static final String AMAZON_LINUX = "arn:aws:ecr:us-west-2:137112412989:repository/amazonlinux";
