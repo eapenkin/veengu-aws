@@ -4,19 +4,14 @@ import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.services.ec2.Vpc;
 import software.amazon.awscdk.services.ecr.IRepository;
 import software.amazon.awscdk.services.ecr.Repository;
-import software.amazon.awscdk.services.ecs.Cluster;
-import software.amazon.awscdk.services.ecs.ContainerImage;
-import software.amazon.awscdk.services.ecs.FargateService;
-import software.amazon.awscdk.services.ecs.patterns.ApplicationLoadBalancedFargateService;
-import software.amazon.awscdk.services.ecs.patterns.ApplicationLoadBalancedTaskImageOptions;
+import software.amazon.awscdk.services.ecs.*;
 import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationLoadBalancer;
 
 import java.util.Map;
 
 import static java.lang.String.valueOf;
-import static software.amazon.awscdk.core.Duration.minutes;
 
-public class FargateCluster extends Construct {
+public class FargateClusterV2 extends Construct {
 
     private static final String AMAZON_LINUX = "arn:aws:ecr:us-west-2:137112412989:repository/amazonlinux";
 
@@ -24,13 +19,51 @@ public class FargateCluster extends Construct {
 
     private ApplicationLoadBalancer balancer;
 
-    public FargateCluster(final Construct scope,
-                          final String id,
-                          final int containerPort) {
+    public FargateClusterV2(final Construct scope,
+                            final String id,
+                            final int containerPort) {
         super(scope, id);
 
         ///////////////////////////////////////////////////////////////////////////
-        // VPC & Cluster
+        // Task Definition
+        ///////////////////////////////////////////////////////////////////////////
+
+        TaskDefinition taskDefinition = FargateTaskDefinition.Builder
+                .create(this, "TaskDefinition")
+                .cpu(256)
+                .memoryLimitMiB(512)
+                .build();
+
+        ///////////////////////////////////////////////////////////////////////////
+        // Container Definition
+        ///////////////////////////////////////////////////////////////////////////
+
+        // This is a workaround. The Amazon Linux container will be replaced by our container after the first execution of CodePipeline.
+        IRepository defaultRegistry = Repository.fromRepositoryArn(this, "DefaultRegistry", AMAZON_LINUX);
+
+        ContainerImage defaultImage = ContainerImage.fromEcrRepository(defaultRegistry);
+
+        Map<String, String> environmentVariables = Map.of(
+                "CONTAINER_PORT", valueOf(containerPort));
+
+        ContainerDefinition containerDefinition = ContainerDefinition.Builder
+                .create(this, "ContainerDefinition")
+                .essential(true)
+                .image(defaultImage)
+                .environment(environmentVariables)
+                .taskDefinition(taskDefinition)
+                .build();
+
+        PortMapping portMapping = PortMapping.builder()
+                .containerPort(containerPort)
+                .hostPort(containerPort)
+                .protocol(Protocol.TCP)
+                .build();
+
+        containerDefinition.addPortMappings(portMapping);
+
+        ///////////////////////////////////////////////////////////////////////////
+        // Fargate Cluster
         ///////////////////////////////////////////////////////////////////////////
 
         Vpc vpc = Vpc.Builder
@@ -42,40 +75,24 @@ public class FargateCluster extends Construct {
                 .vpc(vpc)
                 .build();
 
-        ///////////////////////////////////////////////////////////////////////////
-        // Task Image
-        ///////////////////////////////////////////////////////////////////////////
-
-        // This is a workaround. The Amazon Linux container will be replaced by our container after the first execution of CodePipeline.
-        IRepository defaultRegistry = Repository.fromRepositoryArn(this, "DefaultRegistry", AMAZON_LINUX);
-
-        ContainerImage defaultImage = ContainerImage.fromEcrRepository(defaultRegistry);
-
-        Map<String, String> environmentVariables = Map.of(
-                "CONTAINER_PORT", valueOf(containerPort));
-
-        ApplicationLoadBalancedTaskImageOptions taskImage = ApplicationLoadBalancedTaskImageOptions.builder()
-                .image(defaultImage)
-                .containerPort(containerPort)
-                .environment(environmentVariables)
-                .build();
-
-        ///////////////////////////////////////////////////////////////////////////
-        // Fargate Service
-        ///////////////////////////////////////////////////////////////////////////
-
-        ApplicationLoadBalancedFargateService fargateService = ApplicationLoadBalancedFargateService.Builder
+        FargateService fargateService = FargateService.Builder
                 .create(this, "FargateService")
                 .cluster(cluster)
-                .taskImageOptions(taskImage)
+                .taskDefinition(taskDefinition)
                 .desiredCount(1)
-                .cpu(256)
-                .memoryLimitMiB(512)
-                .healthCheckGracePeriod(minutes(1))
                 .build();
 
-        this.service = fargateService.getService();
-        this.balancer = fargateService.getLoadBalancer();
+        ///////////////////////////////////////////////////////////////////////////
+        // Load Balancer
+        ///////////////////////////////////////////////////////////////////////////
+
+        ApplicationLoadBalancer loadBalancer = ApplicationLoadBalancer.Builder.
+                create(this, "LoadBalancer")
+                .vpc(vpc)
+                .build();
+
+        this.service = fargateService;
+        this.balancer = loadBalancer;
     }
 
     public FargateService getService() {
@@ -85,5 +102,4 @@ public class FargateCluster extends Construct {
     public ApplicationLoadBalancer getBalancer() {
         return balancer;
     }
-
 }

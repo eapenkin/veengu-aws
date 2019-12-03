@@ -1,7 +1,6 @@
 package veengu.aws;
 
 import software.amazon.awscdk.core.Construct;
-import software.amazon.awscdk.core.Stack;
 import software.amazon.awscdk.services.ecr.IRepository;
 import software.amazon.awscdk.services.ecr.LifecycleRule;
 import software.amazon.awscdk.services.ecr.Repository;

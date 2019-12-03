@@ -1,7 +1,6 @@
 package veengu.aws;
 
 import software.amazon.awscdk.core.Construct;
-import software.amazon.awscdk.core.Stack;
 import software.amazon.awscdk.services.elasticloadbalancingv2.ILoadBalancerV2;
 import software.amazon.awscdk.services.route53.*;
 import software.amazon.awscdk.services.route53.targets.LoadBalancerTarget;
