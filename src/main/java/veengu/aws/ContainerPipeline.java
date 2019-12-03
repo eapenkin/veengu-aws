@@ -1,9 +1,9 @@
 package veengu.aws;
 
 import software.amazon.awscdk.core.Construct;
-import software.amazon.awscdk.core.Stack;
 import software.amazon.awscdk.services.codebuild.*;
 import software.amazon.awscdk.services.codecommit.IRepository;
+import software.amazon.awscdk.services.codecommit.Repository;
 import software.amazon.awscdk.services.codepipeline.Artifact;
 import software.amazon.awscdk.services.codepipeline.Pipeline;
 import software.amazon.awscdk.services.codepipeline.StageProps;
@@ -35,14 +35,20 @@ public class ContainerPipeline extends Construct {
 
     public ContainerPipeline(final Construct scope,
                              final String id,
+                             final String region,
+                             final String account,
+                             final String repositoryName,
                              final String branchName,
                              final int containerPort,
-                             final IRepository gitRepository,
                              final software.amazon.awscdk.services.ecr.IRepository dockerRegistry,
-                             final FargateService fargateService,
-                             String region,
-                             String account) {
+                             final FargateService fargateService) {
         super(scope, id);
+
+        ///////////////////////////////////////////////////////////////////////////
+        // Git Repository
+        ///////////////////////////////////////////////////////////////////////////
+
+        IRepository gitRepository = Repository.fromRepositoryName(this, "GitRepository", repositoryName);
 
         ///////////////////////////////////////////////////////////////////////////
         // Build Project
