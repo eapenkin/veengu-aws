@@ -12,7 +12,7 @@ public class VeenguStack extends Stack {
 
     public VeenguStack(Construct scope, String id, String repositoryName, String branchName) {
         super(scope, id);
-        FargateCluster fargateCluster = new FargateCluster(this, "FargateCluster", CONTAINER_PORT);
+        FargateClusterV2 fargateCluster = new FargateClusterV2(this, "FargateCluster", CONTAINER_PORT);
         DomainName domainName = new DomainName(this, "DomainName", ZONE_NAME, ZONE_ID, fargateCluster.getBalancer());
         DockerRegistry dockerRegistry = new DockerRegistry(this, "DockerRegistry", REGISTRY_NAME);
         ContainerPipeline containerPipeline = new ContainerPipeline(this, "ContainerPipeline", getRegion(), getAccount(), repositoryName, branchName, CONTAINER_PORT, dockerRegistry.getRegistry(), fargateCluster.getService());

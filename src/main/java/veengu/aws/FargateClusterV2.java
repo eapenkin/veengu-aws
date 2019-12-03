@@ -4,12 +4,16 @@ import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.services.ec2.Vpc;
 import software.amazon.awscdk.services.ecr.IRepository;
 import software.amazon.awscdk.services.ecr.Repository;
+import software.amazon.awscdk.services.ecs.Protocol;
 import software.amazon.awscdk.services.ecs.*;
-import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationLoadBalancer;
+import software.amazon.awscdk.services.elasticloadbalancingv2.HealthCheck;
+import software.amazon.awscdk.services.elasticloadbalancingv2.*;
 
+import java.util.List;
 import java.util.Map;
 
 import static java.lang.String.valueOf;
+import static software.amazon.awscdk.core.Duration.seconds;
 
 public class FargateClusterV2 extends Construct {
 
@@ -25,17 +29,15 @@ public class FargateClusterV2 extends Construct {
         super(scope, id);
 
         ///////////////////////////////////////////////////////////////////////////
-        // Task Definition
+        // Private Cloud
         ///////////////////////////////////////////////////////////////////////////
 
-        TaskDefinition taskDefinition = FargateTaskDefinition.Builder
-                .create(this, "TaskDefinition")
-                .cpu(256)
-                .memoryLimitMiB(512)
+        Vpc vpc = Vpc.Builder
+                .create(this, "Vpc")
                 .build();
 
         ///////////////////////////////////////////////////////////////////////////
-        // Container Definition
+        // Task Definition
         ///////////////////////////////////////////////////////////////////////////
 
         // This is a workaround. The Amazon Linux container will be replaced by our container after the first execution of CodePipeline.
@@ -45,6 +47,12 @@ public class FargateClusterV2 extends Construct {
 
         Map<String, String> environmentVariables = Map.of(
                 "CONTAINER_PORT", valueOf(containerPort));
+
+        TaskDefinition taskDefinition = FargateTaskDefinition.Builder
+                .create(this, "TaskDefinition")
+                .cpu(256)
+                .memoryLimitMiB(512)
+                .build();
 
         ContainerDefinition containerDefinition = ContainerDefinition.Builder
                 .create(this, "ContainerDefinition")
@@ -66,10 +74,6 @@ public class FargateClusterV2 extends Construct {
         // Fargate Cluster
         ///////////////////////////////////////////////////////////////////////////
 
-        Vpc vpc = Vpc.Builder
-                .create(this, "Vpc")
-                .build();
-
         Cluster cluster = Cluster.Builder
                 .create(this, "FargateCluster")
                 .vpc(vpc)
@@ -86,10 +90,34 @@ public class FargateClusterV2 extends Construct {
         // Load Balancer
         ///////////////////////////////////////////////////////////////////////////
 
-        ApplicationLoadBalancer loadBalancer = ApplicationLoadBalancer.Builder.
-                create(this, "LoadBalancer")
+        ApplicationLoadBalancer loadBalancer = ApplicationLoadBalancer.Builder
+                .create(this, "LoadBalancer")
                 .vpc(vpc)
+                .internetFacing(true)
                 .build();
+
+        ApplicationListener applicationListener = ApplicationListener.Builder
+                .create(this, "ApplicationListener")
+                .open(true)
+                .port(80)
+                .protocol(ApplicationProtocol.HTTP)
+                .loadBalancer(loadBalancer)
+                .build();
+
+        HealthCheck healthCheck = HealthCheck.builder()
+                .healthyThresholdCount(2)
+                .interval(seconds(10))
+                .path("/health-checks")
+                .build();
+
+        AddApplicationTargetsProps applicationTarget = AddApplicationTargetsProps.builder()
+                .port(containerPort)
+                .targets(List.of(fargateService))
+                .healthCheck(healthCheck)
+                .deregistrationDelay(seconds(0))
+                .build();
+
+        applicationListener.addTargets("Target", applicationTarget);
 
         this.service = fargateService;
         this.balancer = loadBalancer;
