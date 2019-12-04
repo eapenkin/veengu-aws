@@ -19,6 +19,7 @@ import java.util.TreeMap;
 import static java.lang.String.valueOf;
 import static software.amazon.awscdk.services.codebuild.BuildEnvironmentVariableType.PLAINTEXT;
 import static software.amazon.awscdk.services.codebuild.Cache.local;
+import static software.amazon.awscdk.services.codebuild.LinuxBuildImage.UBUNTU_14_04_OPEN_JDK_11;
 import static software.amazon.awscdk.services.codebuild.LocalCacheMode.*;
 import static software.amazon.awscdk.services.codebuild.Source.codeCommit;
 import static software.amazon.awscdk.services.codepipeline.actions.CodeCommitTrigger.EVENTS;
@@ -61,7 +62,7 @@ public class ContainerPipeline extends Construct {
                 .build();
 
         BuildEnvironment buildEnvironment = BuildEnvironment.builder()
-                .buildImage(LinuxBuildImage.UBUNTU_14_04_OPEN_JDK_11)
+                .buildImage(UBUNTU_14_04_OPEN_JDK_11)
                 .privileged(true)
                 .build();
 
