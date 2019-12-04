@@ -61,7 +61,7 @@ public class ContainerPipeline extends Construct {
                 .build();
 
         BuildEnvironment buildEnvironment = BuildEnvironment.builder()
-                .buildImage(LinuxBuildImage.STANDARD_2_0)
+                .buildImage(LinuxBuildImage.UBUNTU_14_04_OPEN_JDK_11)
                 .privileged(true)
                 .build();
 
