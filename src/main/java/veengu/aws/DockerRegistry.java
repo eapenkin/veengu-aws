@@ -10,7 +10,7 @@ import java.util.List;
 
 public class DockerRegistry extends Construct {
 
-    private Repository registry;
+    private final Repository registry;
 
     public DockerRegistry(final Construct scope,
                           final String id,

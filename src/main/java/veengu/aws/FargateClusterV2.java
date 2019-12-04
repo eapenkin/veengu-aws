@@ -22,12 +22,13 @@ import static software.amazon.awscdk.services.ec2.SubnetType.PUBLIC;
 
 public class FargateClusterV2 extends Construct {
 
-    private FargateService service;
+    private final FargateService service;
 
-    private ApplicationLoadBalancer balancer;
+    private final ApplicationLoadBalancer balancer;
 
     public FargateClusterV2(final Construct scope,
                             final String id,
+                            final int internetPort,
                             final int containerPort,
                             final IRepository dockerRegistry) {
         super(scope, id);
@@ -154,7 +155,7 @@ public class FargateClusterV2 extends Construct {
         ApplicationListener applicationListener = ApplicationListener.Builder
                 .create(this, "ApplicationListener")
                 .open(true)
-                .port(80)
+                .port(internetPort)
                 .protocol(ApplicationProtocol.HTTP)
                 .loadBalancer(loadBalancer)
                 .build();

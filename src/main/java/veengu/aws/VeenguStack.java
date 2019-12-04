@@ -5,16 +5,14 @@ import software.amazon.awscdk.core.Stack;
 
 public class VeenguStack extends Stack {
 
-    public static final int CONTAINER_PORT = 8080;
-    public static final String REGISTRY_NAME = "veengu-back";
     public static final String ZONE_NAME = "veengu.xyz";
     public static final String ZONE_ID = "Z3K66451X409D1";
 
-    public VeenguStack(Construct scope, String id, String repositoryName, String branchName) {
+    public VeenguStack(Construct scope, String id, String repositoryName, String branchName, int internetPort, int containerPort) {
         super(scope, id);
-        DockerRegistry dockerRegistry = new DockerRegistry(this, "DockerRegistry", REGISTRY_NAME);
-        FargateClusterV2 fargateCluster = new FargateClusterV2(this, "FargateCluster", CONTAINER_PORT, dockerRegistry.getRegistry());
+        DockerRegistry dockerRegistry = new DockerRegistry(this, "DockerRegistry", repositoryName);
+        FargateClusterV2 fargateCluster = new FargateClusterV2(this, "FargateCluster", internetPort, containerPort, dockerRegistry.getRegistry());
         DomainName domainName = new DomainName(this, "DomainName", ZONE_NAME, ZONE_ID, fargateCluster.getBalancer());
-        ContainerPipeline containerPipeline = new ContainerPipeline(this, "ContainerPipeline", getRegion(), getAccount(), repositoryName, branchName, CONTAINER_PORT, dockerRegistry.getRegistry(), fargateCluster.getService());
+        ContainerPipeline containerPipeline = new ContainerPipeline(this, "ContainerPipeline", getRegion(), getAccount(), repositoryName, branchName, containerPort, dockerRegistry.getRegistry(), fargateCluster.getService());
     }
 }
