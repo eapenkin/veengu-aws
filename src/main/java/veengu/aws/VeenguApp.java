@@ -11,7 +11,8 @@ public class VeenguApp {
 
     public static void main(final String[] args) {
         App app = new App();
-        ContainerStack stack = new ContainerStack(app, "DevStack", REPOSITORY_NAME, DEVELOP_BRANCH, INTERNET_PORT, CONTAINER_PORT);
+        NetworkStack networkStack = new NetworkStack(app, "NetworkStack");
+        ContainerStack devStack = new ContainerStack(app, "DevStack", REPOSITORY_NAME, DEVELOP_BRANCH, INTERNET_PORT, CONTAINER_PORT, networkStack.getCluster(), networkStack.getLoadBalancer());
         app.synth();
     }
 }

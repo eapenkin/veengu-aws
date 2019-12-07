@@ -13,84 +13,21 @@ import java.util.Map;
 
 import static java.lang.String.valueOf;
 import static software.amazon.awscdk.core.Duration.seconds;
-import static software.amazon.awscdk.services.ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH_LOGS;
-import static software.amazon.awscdk.services.ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER;
-import static software.amazon.awscdk.services.ec2.Peer.anyIpv4;
-import static software.amazon.awscdk.services.ec2.Port.tcp;
 import static software.amazon.awscdk.services.ec2.SubnetType.ISOLATED;
-import static software.amazon.awscdk.services.ec2.SubnetType.PUBLIC;
 
-public class FargateCluster extends Construct {
+public class ContainerService extends Construct {
 
     private final FargateService service;
 
-    private final ApplicationLoadBalancer balancer;
-
-    public FargateCluster(final Construct scope,
-                          final String id,
-                          final int internetPort,
-                          final int containerPort,
-                          final String healthPath,
-                          final IRepository dockerRegistry) {
+    public ContainerService(final Construct scope,
+                            final String id,
+                            final int internetPort,
+                            final int containerPort,
+                            final String healthPath,
+                            final IRepository dockerRegistry,
+                            final ICluster fargateCluster,
+                            final IApplicationLoadBalancer loadBalancer) {
         super(scope, id);
-
-        ///////////////////////////////////////////////////////////////////////////
-        // Private Cloud
-        ///////////////////////////////////////////////////////////////////////////
-
-        SubnetConfiguration publicSubnet = SubnetConfiguration.builder()
-                .name("Public")
-                .subnetType(PUBLIC)
-                .cidrMask(18)
-                .build();
-
-        SubnetConfiguration isolatedSubnet = SubnetConfiguration.builder()
-                .name("Isolated")
-                .subnetType(ISOLATED)
-                .cidrMask(18)
-                .build();
-
-        Vpc vpc = Vpc.Builder
-                .create(this, "Vpc")
-                .natGateways(0)
-                .maxAzs(2)
-                .subnetConfiguration(List.of(publicSubnet, isolatedSubnet))
-                .build();
-
-        SubnetSelection isolatedSubnets = SubnetSelection.builder()
-                .subnetType(ISOLATED)
-                .build();
-
-        ///////////////////////////////////////////////////////////////////////////
-        // AWS PrivateLink
-        ///////////////////////////////////////////////////////////////////////////
-
-        SecurityGroup allowIngressHttps = SecurityGroup.Builder
-                .create(this, "AllowIngressHTTPS")
-                .vpc(vpc)
-                .allowAllOutbound(true)
-                .build();
-        allowIngressHttps.addIngressRule(anyIpv4(), tcp(443));
-
-        InterfaceVpcEndpointOptions dockerInterface = InterfaceVpcEndpointOptions.builder()
-                .service(ECR_DOCKER)
-                .subnets(isolatedSubnets)
-                .securityGroups(List.of(allowIngressHttps))
-                .build();
-
-        InterfaceVpcEndpointOptions logsInterface = InterfaceVpcEndpointOptions.builder()
-                .service(CLOUDWATCH_LOGS)
-                .subnets(isolatedSubnets)
-                .build();
-
-        GatewayVpcEndpointOptions s3Gateway = GatewayVpcEndpointOptions.builder()
-                .service(GatewayVpcEndpointAwsService.S3)
-                .subnets(List.of(isolatedSubnets))
-                .build();
-
-        vpc.addInterfaceEndpoint("DockerInterface", dockerInterface);
-        vpc.addInterfaceEndpoint("CloudWatchInterface", logsInterface);
-        vpc.addGatewayEndpoint("S3Gateway", s3Gateway);
 
         ///////////////////////////////////////////////////////////////////////////
         // Task Definition
@@ -124,34 +61,28 @@ public class FargateCluster extends Construct {
         containerDefinition.addPortMappings(portMapping);
 
         ///////////////////////////////////////////////////////////////////////////
-        // Fargate Cluster
+        // Fargate Service
         ///////////////////////////////////////////////////////////////////////////
 
-        Cluster cluster = Cluster.Builder
-                .create(this, "FargateCluster")
-                .vpc(vpc)
+        SubnetSelection isolatedSubnets = SubnetSelection.builder()
+                .subnetType(ISOLATED)
                 .build();
 
         FargateService fargateService = FargateService.Builder
                 .create(this, "FargateService")
-                .cluster(cluster)
+                .cluster(fargateCluster)
                 .taskDefinition(taskDefinition)
                 .vpcSubnets(isolatedSubnets)
                 .assignPublicIp(false)
                 .desiredCount(0)
                 .minHealthyPercent(100)
                 .maxHealthyPercent(200)
+                .healthCheckGracePeriod(seconds(60))
                 .build();
 
         ///////////////////////////////////////////////////////////////////////////
         // Load Balancer
         ///////////////////////////////////////////////////////////////////////////
-
-        ApplicationLoadBalancer loadBalancer = ApplicationLoadBalancer.Builder
-                .create(this, "LoadBalancer")
-                .vpc(vpc)
-                .internetFacing(true)
-                .build();
 
         ApplicationListener applicationListener = ApplicationListener.Builder
                 .create(this, "ApplicationListener")
@@ -178,14 +109,9 @@ public class FargateCluster extends Construct {
         applicationListener.addTargets("Target", applicationTarget);
 
         this.service = fargateService;
-        this.balancer = loadBalancer;
     }
 
     public FargateService getService() {
         return service;
-    }
-
-    public ApplicationLoadBalancer getBalancer() {
-        return balancer;
     }
 }
