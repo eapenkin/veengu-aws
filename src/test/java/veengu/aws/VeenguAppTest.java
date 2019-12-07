@@ -9,6 +9,6 @@ public class VeenguAppTest {
     public void test() {
         App app = new App();
         NetworkStack networkStack = new NetworkStack(app, "BaseStack");
-        ContainerStack stack = new ContainerStack(app, "TestStack", "TEST_REPO", "TEST_BRANCH", 80, 8080, networkStack.getCluster(), networkStack.getBalancer());
+        ContainerStack stack = new ContainerStack(app, "TestStack", "TEST_REPO", "TEST_BRANCH", 80, 8080, networkStack.getCluster(), networkStack.getBalancer(), networkStack.getZone());
     }
 }

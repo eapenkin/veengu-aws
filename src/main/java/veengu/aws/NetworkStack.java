@@ -16,6 +16,8 @@ import static software.amazon.awscdk.services.ec2.Peer.anyIpv4;
 import static software.amazon.awscdk.services.ec2.Port.tcp;
 import static software.amazon.awscdk.services.ec2.SubnetType.ISOLATED;
 import static software.amazon.awscdk.services.ec2.SubnetType.PUBLIC;
+import static software.amazon.awscdk.services.route53.HostedZone.fromHostedZoneAttributes;
+import static software.amazon.awscdk.services.route53.RecordTarget.fromAlias;
 
 public class NetworkStack extends Stack {
 
@@ -118,7 +120,7 @@ public class NetworkStack extends Stack {
                 .zoneName(ZONE_NAME)
                 .build();
 
-        zone = HostedZone.fromHostedZoneAttributes(this, "HostedZone", zoneAttributes);
+        zone = fromHostedZoneAttributes(this, "HostedZone", zoneAttributes);
 
         ///////////////////////////////////////////////////////////////////////////
         // Alias Record
@@ -127,7 +129,7 @@ public class NetworkStack extends Stack {
         ARecord.Builder
                 .create(this, "AliasRecord")
                 .zone(zone)
-                .target(RecordTarget.fromAlias(new LoadBalancerTarget(balancer)))
+                .target(fromAlias(new LoadBalancerTarget(balancer)))
                 .build();
     }
 

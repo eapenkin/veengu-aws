@@ -24,9 +24,9 @@ public class ContainerService extends Construct {
                             final int internetPort,
                             final int containerPort,
                             final String healthPath,
-                            final IRepository dockerRegistry,
-                            final ICluster fargateCluster,
-                            final IApplicationLoadBalancer loadBalancer) {
+                            final IRepository registry,
+                            final ICluster cluster,
+                            final IApplicationLoadBalancer balancer) {
         super(scope, id);
 
         ///////////////////////////////////////////////////////////////////////////
@@ -39,7 +39,7 @@ public class ContainerService extends Construct {
                 .memoryLimitMiB(512)
                 .build();
 
-        ContainerImage containerImage = ContainerImage.fromEcrRepository(dockerRegistry);
+        ContainerImage containerImage = ContainerImage.fromEcrRepository(registry);
 
         Map<String, String> environmentVariables = Map.of(
                 "CONTAINER_PORT", valueOf(containerPort));
@@ -70,7 +70,7 @@ public class ContainerService extends Construct {
 
         FargateService fargateService = FargateService.Builder
                 .create(this, "FargateService")
-                .cluster(fargateCluster)
+                .cluster(cluster)
                 .taskDefinition(taskDefinition)
                 .vpcSubnets(isolatedSubnets)
                 .assignPublicIp(false)
@@ -89,7 +89,7 @@ public class ContainerService extends Construct {
                 .open(true)
                 .port(internetPort)
                 .protocol(ApplicationProtocol.HTTP)
-                .loadBalancer(loadBalancer)
+                .loadBalancer(balancer)
                 .build();
 
         HealthCheck healthCheck = HealthCheck.builder()

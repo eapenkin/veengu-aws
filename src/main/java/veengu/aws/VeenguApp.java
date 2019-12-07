@@ -12,7 +12,7 @@ public class VeenguApp {
     public static void main(final String[] args) {
         App app = new App();
         NetworkStack networkStack = new NetworkStack(app, "VeenguNetwork");
-        ContainerStack developStack = new ContainerStack(app, "DevelopBranch", REPOSITORY_NAME, DEVELOP_BRANCH, INTERNET_PORT, CONTAINER_PORT, networkStack.getCluster(), networkStack.getBalancer());
+        ContainerStack developStack = new ContainerStack(app, "DevelopBranch", REPOSITORY_NAME, DEVELOP_BRANCH, INTERNET_PORT, CONTAINER_PORT, networkStack.getCluster(), networkStack.getBalancer(), networkStack.getZone());
         app.synth();
     }
 }
