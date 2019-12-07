@@ -11,7 +11,7 @@ public class VeenguApp {
 
     public static void main(final String[] args) {
         App app = new App();
-        VeenguStack stack = new VeenguStack(app, "DevStack", REPOSITORY_NAME, DEVELOP_BRANCH, INTERNET_PORT, CONTAINER_PORT);
+        ContainerStack stack = new ContainerStack(app, "DevStack", REPOSITORY_NAME, DEVELOP_BRANCH, INTERNET_PORT, CONTAINER_PORT);
         app.synth();
     }
 }
