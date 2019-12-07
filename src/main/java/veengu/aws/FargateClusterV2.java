@@ -30,6 +30,7 @@ public class FargateClusterV2 extends Construct {
                             final String id,
                             final int internetPort,
                             final int containerPort,
+                            final String healthPath,
                             final IRepository dockerRegistry) {
         super(scope, id);
 
@@ -164,7 +165,7 @@ public class FargateClusterV2 extends Construct {
                 .healthyThresholdCount(2)
                 .interval(seconds(10))
                 .timeout(seconds(2))
-                .path("/health-checks")
+                .path(healthPath)
                 .build();
 
         AddApplicationTargetsProps applicationTarget = AddApplicationTargetsProps.builder()
