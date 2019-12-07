@@ -1,7 +1,7 @@
 package veengu.aws;
 
 import software.amazon.awscdk.core.Construct;
-import software.amazon.awscdk.services.ec2.*;
+import software.amazon.awscdk.services.ec2.SubnetSelection;
 import software.amazon.awscdk.services.ecr.IRepository;
 import software.amazon.awscdk.services.ecs.Protocol;
 import software.amazon.awscdk.services.ecs.*;
@@ -81,7 +81,7 @@ public class ContainerService extends Construct {
                 .build();
 
         ///////////////////////////////////////////////////////////////////////////
-        // Load Balancer
+        // Application Listener
         ///////////////////////////////////////////////////////////////////////////
 
         ApplicationListener applicationListener = ApplicationListener.Builder

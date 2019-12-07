@@ -24,9 +24,9 @@ public class NetworkStack extends Stack {
 
     private final Cluster cluster;
 
-    private final ApplicationLoadBalancer loadBalancer;
+    private final ApplicationLoadBalancer balancer;
 
-    private final IHostedZone hostedZone;
+    private final IHostedZone zone;
 
     public NetworkStack(final Construct scope,
                         final String id) {
@@ -49,7 +49,7 @@ public class NetworkStack extends Stack {
                 .build();
 
         Vpc vpc = Vpc.Builder
-                .create(this, "VirtualNetwork")
+                .create(this, "Network")
                 .natGateways(0)
                 .maxAzs(2)
                 .subnetConfiguration(List.of(publicSubnet, isolatedSubnet))
@@ -86,15 +86,15 @@ public class NetworkStack extends Stack {
                 .subnets(List.of(isolatedSubnets))
                 .build();
 
-        vpc.addInterfaceEndpoint("DockerInterface", dockerInterface);
-        vpc.addInterfaceEndpoint("CloudWatchInterface", logsInterface);
-        vpc.addGatewayEndpoint("S3Gateway", s3Gateway);
+        vpc.addInterfaceEndpoint("RegistryInterface", dockerInterface);
+        vpc.addInterfaceEndpoint("LogsInterface", logsInterface);
+        vpc.addGatewayEndpoint("StorageGateway", s3Gateway);
 
         ///////////////////////////////////////////////////////////////////////////
         // ECS Cluster
         ///////////////////////////////////////////////////////////////////////////
 
-        this.cluster = Cluster.Builder
+        cluster = Cluster.Builder
                 .create(this, "ContainerCluster")
                 .vpc(vpc)
                 .build();
@@ -103,7 +103,7 @@ public class NetworkStack extends Stack {
         // Load Balancer
         ///////////////////////////////////////////////////////////////////////////
 
-        this.loadBalancer = ApplicationLoadBalancer.Builder
+        balancer = ApplicationLoadBalancer.Builder
                 .create(this, "LoadBalancer")
                 .vpc(vpc)
                 .internetFacing(true)
@@ -118,16 +118,16 @@ public class NetworkStack extends Stack {
                 .zoneName(ZONE_NAME)
                 .build();
 
-        this.hostedZone = HostedZone.fromHostedZoneAttributes(this, "HostedZone", zoneAttributes);
+        zone = HostedZone.fromHostedZoneAttributes(this, "HostedZone", zoneAttributes);
 
         ///////////////////////////////////////////////////////////////////////////
         // Alias Record
         ///////////////////////////////////////////////////////////////////////////
 
         ARecord.Builder
-                .create(this, "DomainRecord")
-                .zone(hostedZone)
-                .target(RecordTarget.fromAlias(new LoadBalancerTarget(loadBalancer)))
+                .create(this, "AliasRecord")
+                .zone(zone)
+                .target(RecordTarget.fromAlias(new LoadBalancerTarget(balancer)))
                 .build();
     }
 
@@ -135,11 +135,11 @@ public class NetworkStack extends Stack {
         return cluster;
     }
 
-    public ApplicationLoadBalancer getLoadBalancer() {
-        return loadBalancer;
+    public ApplicationLoadBalancer getBalancer() {
+        return balancer;
     }
 
-    public IHostedZone getHostedZone() {
-        return hostedZone;
+    public IHostedZone getZone() {
+        return zone;
     }
 }
