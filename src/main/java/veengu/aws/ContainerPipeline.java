@@ -53,7 +53,7 @@ public class ContainerPipeline extends Construct {
         // Git Repository
         ///////////////////////////////////////////////////////////////////////////
 
-        IRepository gitRepository = Repository.fromRepositoryName(this, "GitRepository", repositoryName);
+        IRepository gitRepository = Repository.fromRepositoryName(this, "GIT", repositoryName);
 
         ///////////////////////////////////////////////////////////////////////////
         // Build Project
