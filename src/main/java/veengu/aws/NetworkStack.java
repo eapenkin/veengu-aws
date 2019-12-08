@@ -81,6 +81,7 @@ public class NetworkStack extends Stack {
         InterfaceVpcEndpointOptions logsInterface = InterfaceVpcEndpointOptions.builder()
                 .service(CLOUDWATCH_LOGS)
                 .subnets(isolatedSubnets)
+                .securityGroups(List.of(httpsIngressRule))
                 .build();
 
         GatewayVpcEndpointOptions s3Gateway = GatewayVpcEndpointOptions.builder()

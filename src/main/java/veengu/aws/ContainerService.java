@@ -50,12 +50,18 @@ public class ContainerService extends Construct {
                 .protocol(Protocol.TCP)
                 .build();
 
+        AwsLogDriver logDriver = AwsLogDriver.Builder
+                .create()
+                .streamPrefix(registry.getRepositoryName())
+                .build();
+
         ContainerDefinition containerDefinition = ContainerDefinition.Builder
                 .create(this, "ContainerDefinition")
                 .essential(true)
                 .image(containerImage)
                 .environment(environmentVariables)
                 .taskDefinition(taskDefinition)
+                .logging(logDriver)
                 .build();
 
         containerDefinition.addPortMappings(portMapping);

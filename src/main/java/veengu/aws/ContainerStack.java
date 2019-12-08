@@ -24,7 +24,7 @@ public class ContainerStack extends Stack {
                           final IApplicationLoadBalancer balancer,
                           final IHostedZone zone) {
         super(scope, id);
-        ContainerRegistry containerRegistry = new ContainerRegistry(this, "ContainerRegistry", repositoryName + "-" + branchName);
+        ContainerRegistry containerRegistry = new ContainerRegistry(this, "ContainerRegistry", repositoryName + "/" + branchName);
         ContainerService containerService = new ContainerService(this, "ContainerService", internetPort, containerPort, HEALTH_CHECKS, containerRegistry.getRegistry(), cluster, balancer);
         ContainerPipeline containerPipeline = new ContainerPipeline(this, "ContainerPipeline", getRegion(), getAccount(), repositoryName, branchName, containerPort, containerRegistry.getRegistry(), containerService.getService());
 
