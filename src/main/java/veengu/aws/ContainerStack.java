@@ -5,9 +5,7 @@ import software.amazon.awscdk.core.Stack;
 import software.amazon.awscdk.services.ecs.ICluster;
 import software.amazon.awscdk.services.elasticloadbalancingv2.IApplicationLoadBalancer;
 import software.amazon.awscdk.services.route53.ARecord;
-import software.amazon.awscdk.services.route53.HostedZone;
 import software.amazon.awscdk.services.route53.IHostedZone;
-import software.amazon.awscdk.services.route53.RecordTarget;
 import software.amazon.awscdk.services.route53.targets.LoadBalancerTarget;
 
 import static software.amazon.awscdk.services.route53.RecordTarget.fromAlias;
@@ -26,7 +24,7 @@ public class ContainerStack extends Stack {
                           final IApplicationLoadBalancer balancer,
                           final IHostedZone zone) {
         super(scope, id);
-        ContainerRegistry containerRegistry = new ContainerRegistry(this, "ContainerRegistry", repositoryName);
+        ContainerRegistry containerRegistry = new ContainerRegistry(this, "ContainerRegistry", repositoryName + "-" + branchName);
         ContainerService containerService = new ContainerService(this, "ContainerService", internetPort, containerPort, HEALTH_CHECKS, containerRegistry.getRegistry(), cluster, balancer);
         ContainerPipeline containerPipeline = new ContainerPipeline(this, "ContainerPipeline", getRegion(), getAccount(), repositoryName, branchName, containerPort, containerRegistry.getRegistry(), containerService.getService());
 
