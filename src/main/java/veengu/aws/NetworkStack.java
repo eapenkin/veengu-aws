@@ -4,10 +4,7 @@ import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Stack;
 import software.amazon.awscdk.services.ec2.*;
 import software.amazon.awscdk.services.ecs.Cluster;
-import software.amazon.awscdk.services.elasticloadbalancingv2.AddFixedResponseProps;
-import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationListener;
-import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationLoadBalancer;
-import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationProtocol;
+import software.amazon.awscdk.services.elasticloadbalancingv2.*;
 import software.amazon.awscdk.services.route53.ARecord;
 import software.amazon.awscdk.services.route53.HostedZoneAttributes;
 import software.amazon.awscdk.services.route53.IHostedZone;
@@ -21,14 +18,12 @@ import static software.amazon.awscdk.services.ec2.Peer.anyIpv4;
 import static software.amazon.awscdk.services.ec2.Port.tcp;
 import static software.amazon.awscdk.services.ec2.SubnetType.ISOLATED;
 import static software.amazon.awscdk.services.ec2.SubnetType.PUBLIC;
+import static software.amazon.awscdk.services.elasticloadbalancingv2.ContentType.APPLICATION_JSON;
 import static software.amazon.awscdk.services.elasticloadbalancingv2.ContentType.TEXT_PLAIN;
 import static software.amazon.awscdk.services.route53.HostedZone.fromHostedZoneAttributes;
 import static software.amazon.awscdk.services.route53.RecordTarget.fromAlias;
 
 public class NetworkStack extends Stack {
-
-    public static final String ZONE_NAME = "veengu.xyz";
-    public static final String ZONE_ID = "Z3K66451X409D1";
 
     private final Cluster cluster;
 
@@ -38,7 +33,9 @@ public class NetworkStack extends Stack {
 
     public NetworkStack(final Construct scope,
                         final String id,
-                        final int internetPort) {
+                        final int internetPort,
+                        final String zoneName,
+                        final String zoneId) {
         super(scope, id);
 
         ///////////////////////////////////////////////////////////////////////////
@@ -129,8 +126,8 @@ public class NetworkStack extends Stack {
 
         AddFixedResponseProps defaultResponse = AddFixedResponseProps.builder()
                 .statusCode("400")
-                .contentType(TEXT_PLAIN)
-                .messageBody("Route not found")
+                .contentType(APPLICATION_JSON)
+                .messageBody("{\"message\":\"Unknown host\",\"errors\":[{\"code\":\"UNKNOWN_HOST\",\"message\":\"Please use AWS console to pick a proper value for Host header. It should be formatted as <branch_name>.veengu.xyz.\"}]}")
                 .build();
 
         listener.addFixedResponse("DefaultResponse", defaultResponse);
@@ -140,8 +137,8 @@ public class NetworkStack extends Stack {
         ///////////////////////////////////////////////////////////////////////////
 
         HostedZoneAttributes zoneAttributes = HostedZoneAttributes.builder()
-                .hostedZoneId(ZONE_ID)
-                .zoneName(ZONE_NAME)
+                .hostedZoneId(zoneId)
+                .zoneName(zoneName)
                 .build();
 
         zone = fromHostedZoneAttributes(this, "Zone", zoneAttributes);
