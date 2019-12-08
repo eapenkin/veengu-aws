@@ -110,7 +110,7 @@ public class ContainerService extends Construct {
                 .build();
 
         ApplicationTargetGroup targetGroup = ApplicationTargetGroup.Builder
-                .create(listener, upperCamel(branchName) + "TargetGroup") // FIXME try to create inside this stack in 1.19.0
+                .create(listener, upperCamel(branchName) + "Group") // FIXME try to create inside this stack in 1.19.0
                 .vpc(listener.getLoadBalancer().getVpc())
                 .port(containerPort)
                 .targets(List.of(service))
@@ -131,7 +131,7 @@ public class ContainerService extends Construct {
         ///////////////////////////////////////////////////////////////////////////
 
         ARecord.Builder
-                .create(this, "ListenerAlias")
+                .create(this, "Alias")
                 .zone(zone)
                 .recordName(branchName + "." + zone.getZoneName())
                 .target(fromAlias(new LoadBalancerTarget(listener.getLoadBalancer())))

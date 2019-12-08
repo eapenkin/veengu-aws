@@ -73,7 +73,7 @@ public class NetworkStack extends Stack {
         ///////////////////////////////////////////////////////////////////////////
 
         SecurityGroup httpsSecurityGroup = SecurityGroup.Builder
-                .create(this, "InterfaceSecurityGroup")
+                .create(this, "SecurityGroup")
                 .vpc(vpc)
                 .allowAllOutbound(true)
                 .build();
@@ -105,7 +105,7 @@ public class NetworkStack extends Stack {
         ///////////////////////////////////////////////////////////////////////////
 
         cluster = Cluster.Builder
-                .create(this, "ContainerCluster")
+                .create(this, "Cluster")
                 .vpc(vpc)
                 .build();
 
@@ -114,13 +114,13 @@ public class NetworkStack extends Stack {
         ///////////////////////////////////////////////////////////////////////////
 
         ApplicationLoadBalancer balancer = ApplicationLoadBalancer.Builder
-                .create(this, "LoadBalancer")
+                .create(this, "ELB")
                 .vpc(vpc)
                 .internetFacing(true)
                 .build();
 
         listener = ApplicationListener.Builder
-                .create(this, "ApplicationListener")
+                .create(this, "HTTPListener")
                 .open(true)
                 .port(internetPort)
                 .protocol(ApplicationProtocol.HTTP)
@@ -144,14 +144,14 @@ public class NetworkStack extends Stack {
                 .zoneName(ZONE_NAME)
                 .build();
 
-        zone = fromHostedZoneAttributes(this, "HostedZone", zoneAttributes);
+        zone = fromHostedZoneAttributes(this, "Zone", zoneAttributes);
 
         ///////////////////////////////////////////////////////////////////////////
         // Alias Record
         ///////////////////////////////////////////////////////////////////////////
 
         ARecord.Builder
-                .create(this, "BalancerAlias")
+                .create(this, "Alias")
                 .zone(zone)
                 .target(fromAlias(new LoadBalancerTarget(balancer)))
                 .build();

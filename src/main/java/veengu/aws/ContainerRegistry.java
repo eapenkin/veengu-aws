@@ -25,7 +25,7 @@ public class ContainerRegistry extends Construct {
                 .build();
 
         this.registry = Repository.Builder
-                .create(this, "ContainerRegistry")
+                .create(this, "Registry")
                 .repositoryName(name)
                 .lifecycleRules(List.of(oneUntaggedImage))
                 .build();

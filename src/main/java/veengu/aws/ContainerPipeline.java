@@ -79,7 +79,7 @@ public class ContainerPipeline extends Construct {
         // TODO test with BitBucket
 
         Project buildProject = Project.Builder
-                .create(this, "CodeBuilder")
+                .create(this, "Builder")
                 .source(codeCommit(repositorySource))
                 .environment(buildEnvironment)
                 .environmentVariables(environmentVariables)
@@ -94,7 +94,7 @@ public class ContainerPipeline extends Construct {
 
         CodeCommitSourceAction sourceAction = CodeCommitSourceAction.Builder
                 .create()
-                .actionName("CodeCommitAction")
+                .actionName("CodeCommit")
                 .repository(gitRepository)
                 .branch(branchName)
                 .trigger(EVENTS)
@@ -102,7 +102,7 @@ public class ContainerPipeline extends Construct {
                 .build();
 
         StageProps sourceStage = StageProps.builder()
-                .stageName("SourceStage")
+                .stageName("Source")
                 .actions(List.of(sourceAction))
                 .build();
 
@@ -114,14 +114,14 @@ public class ContainerPipeline extends Construct {
 
         CodeBuildAction buildAction = CodeBuildAction.Builder
                 .create()
-                .actionName("CodeBuildAction")
+                .actionName("CodeBuild")
                 .project(buildProject)
                 .input(sourceOutput)
                 .outputs(List.of(buildOutput))
                 .build();
 
         StageProps buildStage = StageProps.builder()
-                .stageName("BuildStage")
+                .stageName("Build")
                 .actions(List.of(buildAction))
                 .build();
 
@@ -131,13 +131,13 @@ public class ContainerPipeline extends Construct {
 
         EcsDeployAction deployAction = EcsDeployAction.Builder
                 .create()
-                .actionName("ECSDeployAction")
+                .actionName("ECSDeploy")
                 .service(fargateService)
                 .input(buildOutput)
                 .build();
 
         StageProps deployStage = StageProps.builder()
-                .stageName("DeployStage")
+                .stageName("Deploy")
                 .actions(List.of(deployAction))
                 .build();
 
@@ -146,7 +146,7 @@ public class ContainerPipeline extends Construct {
         ///////////////////////////////////////////////////////////////////////////
 
         Pipeline.Builder
-                .create(this, "CodePipeline")
+                .create(this, "Pipeline")
                 .stages(List.of(sourceStage, buildStage, deployStage))
                 .build();
 
