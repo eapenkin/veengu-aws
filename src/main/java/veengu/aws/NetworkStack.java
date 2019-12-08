@@ -58,7 +58,7 @@ public class NetworkStack extends Stack {
                 .build();
 
         Vpc vpc = Vpc.Builder
-                .create(this, "VirtualCloud")
+                .create(this, "VPC")
                 .natGateways(0)
                 .maxAzs(2)
                 .subnetConfiguration(List.of(publicSubnet, isolatedSubnet))
