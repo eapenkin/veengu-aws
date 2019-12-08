@@ -1,12 +1,17 @@
 package veengu.aws;
 
+import com.google.common.base.CaseFormat;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.services.ec2.SubnetSelection;
 import software.amazon.awscdk.services.ecr.IRepository;
-import software.amazon.awscdk.services.ecs.Protocol;
 import software.amazon.awscdk.services.ecs.*;
+import software.amazon.awscdk.services.elasticloadbalancingv2.AddApplicationTargetGroupsProps;
+import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationListener;
+import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationTargetGroup;
 import software.amazon.awscdk.services.elasticloadbalancingv2.HealthCheck;
-import software.amazon.awscdk.services.elasticloadbalancingv2.*;
+import software.amazon.awscdk.services.route53.ARecord;
+import software.amazon.awscdk.services.route53.IHostedZone;
+import software.amazon.awscdk.services.route53.targets.LoadBalancerTarget;
 
 import java.util.List;
 import java.util.Map;
@@ -14,19 +19,26 @@ import java.util.Map;
 import static java.lang.String.valueOf;
 import static software.amazon.awscdk.core.Duration.seconds;
 import static software.amazon.awscdk.services.ec2.SubnetType.ISOLATED;
+import static software.amazon.awscdk.services.route53.RecordTarget.fromAlias;
 
 public class ContainerService extends Construct {
 
     private final FargateService service;
 
+    private static String upperCamel(String string) {
+        return CaseFormat.LOWER_HYPHEN.to(CaseFormat.UPPER_CAMEL, string);
+    }
+
     public ContainerService(final Construct scope,
                             final String id,
-                            final int internetPort,
+                            final String branchName,
                             final int containerPort,
                             final String healthPath,
+                            final int routingPriority,
                             final IRepository registry,
-                            final ICluster cluster,
-                            final IApplicationLoadBalancer balancer) {
+                            final Cluster cluster,
+                            final ApplicationListener listener,
+                            final IHostedZone zone) {
         super(scope, id);
 
         ///////////////////////////////////////////////////////////////////////////
@@ -56,7 +68,7 @@ public class ContainerService extends Construct {
                 .build();
 
         ContainerDefinition containerDefinition = ContainerDefinition.Builder
-                .create(this, "ContainerDefinition")
+                .create(this, upperCamel(branchName) + "Container")
                 .essential(true)
                 .image(containerImage)
                 .environment(environmentVariables)
@@ -74,7 +86,7 @@ public class ContainerService extends Construct {
                 .subnetType(ISOLATED)
                 .build();
 
-        FargateService fargateService = FargateService.Builder
+        service = FargateService.Builder
                 .create(this, "FargateService")
                 .cluster(cluster)
                 .taskDefinition(taskDefinition)
@@ -83,20 +95,12 @@ public class ContainerService extends Construct {
                 .desiredCount(0)
                 .minHealthyPercent(100)
                 .maxHealthyPercent(200)
-                .healthCheckGracePeriod(seconds(60))
+                .healthCheckGracePeriod(seconds(120))
                 .build();
 
         ///////////////////////////////////////////////////////////////////////////
         // Application Listener
         ///////////////////////////////////////////////////////////////////////////
-
-        ApplicationListener applicationListener = ApplicationListener.Builder
-                .create(this, "ApplicationListener")
-                .open(true)
-                .port(internetPort)
-                .protocol(ApplicationProtocol.HTTP)
-                .loadBalancer(balancer)
-                .build();
 
         HealthCheck healthCheck = HealthCheck.builder()
                 .healthyThresholdCount(2)
@@ -105,16 +109,33 @@ public class ContainerService extends Construct {
                 .path(healthPath)
                 .build();
 
-        AddApplicationTargetsProps applicationTarget = AddApplicationTargetsProps.builder()
+        ApplicationTargetGroup targetGroup = ApplicationTargetGroup.Builder
+                .create(listener, upperCamel(branchName) + "TargetGroup") // FIXME try to create inside this stack in 1.19.0
+                .vpc(listener.getLoadBalancer().getVpc())
                 .port(containerPort)
-                .targets(List.of(fargateService))
+                .targets(List.of(service))
                 .healthCheck(healthCheck)
                 .deregistrationDelay(seconds(10))
                 .build();
 
-        applicationListener.addTargets("Target", applicationTarget);
+        AddApplicationTargetGroupsProps listenerRule = AddApplicationTargetGroupsProps.builder()
+                .targetGroups(List.of(targetGroup))
+                .hostHeader(branchName + "." + zone.getZoneName())
+                .priority(routingPriority)
+                .build();
 
-        this.service = fargateService;
+        listener.addTargetGroups(upperCamel(branchName) + "Listener", listenerRule);
+
+        ///////////////////////////////////////////////////////////////////////////
+        // Domain Name
+        ///////////////////////////////////////////////////////////////////////////
+
+        ARecord.Builder
+                .create(this, "ListenerAlias")
+                .zone(zone)
+                .recordName(branchName + "." + zone.getZoneName())
+                .target(fromAlias(new LoadBalancerTarget(listener.getLoadBalancer())))
+                .build();
     }
 
     public FargateService getService() {

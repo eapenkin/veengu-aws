@@ -1,7 +1,10 @@
 package veengu.aws;
 
 import software.amazon.awscdk.core.Construct;
-import software.amazon.awscdk.services.codebuild.*;
+import software.amazon.awscdk.services.codebuild.BuildEnvironment;
+import software.amazon.awscdk.services.codebuild.BuildEnvironmentVariable;
+import software.amazon.awscdk.services.codebuild.CodeCommitSourceProps;
+import software.amazon.awscdk.services.codebuild.Project;
 import software.amazon.awscdk.services.codecommit.IRepository;
 import software.amazon.awscdk.services.codecommit.Repository;
 import software.amazon.awscdk.services.codepipeline.Artifact;

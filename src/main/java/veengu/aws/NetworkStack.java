@@ -4,8 +4,13 @@ import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Stack;
 import software.amazon.awscdk.services.ec2.*;
 import software.amazon.awscdk.services.ecs.Cluster;
+import software.amazon.awscdk.services.elasticloadbalancingv2.AddFixedResponseProps;
+import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationListener;
 import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationLoadBalancer;
-import software.amazon.awscdk.services.route53.*;
+import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationProtocol;
+import software.amazon.awscdk.services.route53.ARecord;
+import software.amazon.awscdk.services.route53.HostedZoneAttributes;
+import software.amazon.awscdk.services.route53.IHostedZone;
 import software.amazon.awscdk.services.route53.targets.LoadBalancerTarget;
 
 import java.util.List;
@@ -16,6 +21,7 @@ import static software.amazon.awscdk.services.ec2.Peer.anyIpv4;
 import static software.amazon.awscdk.services.ec2.Port.tcp;
 import static software.amazon.awscdk.services.ec2.SubnetType.ISOLATED;
 import static software.amazon.awscdk.services.ec2.SubnetType.PUBLIC;
+import static software.amazon.awscdk.services.elasticloadbalancingv2.ContentType.TEXT_PLAIN;
 import static software.amazon.awscdk.services.route53.HostedZone.fromHostedZoneAttributes;
 import static software.amazon.awscdk.services.route53.RecordTarget.fromAlias;
 
@@ -26,12 +32,13 @@ public class NetworkStack extends Stack {
 
     private final Cluster cluster;
 
-    private final ApplicationLoadBalancer balancer;
+    private final ApplicationListener listener;
 
     private final IHostedZone zone;
 
     public NetworkStack(final Construct scope,
-                        final String id) {
+                        final String id,
+                        final int internetPort) {
         super(scope, id);
 
         ///////////////////////////////////////////////////////////////////////////
@@ -51,7 +58,7 @@ public class NetworkStack extends Stack {
                 .build();
 
         Vpc vpc = Vpc.Builder
-                .create(this, "Network")
+                .create(this, "VirtualCloud")
                 .natGateways(0)
                 .maxAzs(2)
                 .subnetConfiguration(List.of(publicSubnet, isolatedSubnet))
@@ -65,23 +72,23 @@ public class NetworkStack extends Stack {
         // AWS PrivateLink
         ///////////////////////////////////////////////////////////////////////////
 
-        SecurityGroup httpsIngressRule = SecurityGroup.Builder
-                .create(this, "HttpsIngressRule")
+        SecurityGroup httpsSecurityGroup = SecurityGroup.Builder
+                .create(this, "InterfaceSecurityGroup")
                 .vpc(vpc)
                 .allowAllOutbound(true)
                 .build();
-        httpsIngressRule.addIngressRule(anyIpv4(), tcp(443));
+        httpsSecurityGroup.addIngressRule(anyIpv4(), tcp(443));
 
         InterfaceVpcEndpointOptions dockerInterface = InterfaceVpcEndpointOptions.builder()
                 .service(ECR_DOCKER)
                 .subnets(isolatedSubnets)
-                .securityGroups(List.of(httpsIngressRule))
+                .securityGroups(List.of(httpsSecurityGroup))
                 .build();
 
         InterfaceVpcEndpointOptions logsInterface = InterfaceVpcEndpointOptions.builder()
                 .service(CLOUDWATCH_LOGS)
                 .subnets(isolatedSubnets)
-                .securityGroups(List.of(httpsIngressRule))
+                .securityGroups(List.of(httpsSecurityGroup))
                 .build();
 
         GatewayVpcEndpointOptions s3Gateway = GatewayVpcEndpointOptions.builder()
@@ -106,11 +113,27 @@ public class NetworkStack extends Stack {
         // Load Balancer
         ///////////////////////////////////////////////////////////////////////////
 
-        balancer = ApplicationLoadBalancer.Builder
+        ApplicationLoadBalancer balancer = ApplicationLoadBalancer.Builder
                 .create(this, "LoadBalancer")
                 .vpc(vpc)
                 .internetFacing(true)
                 .build();
+
+        listener = ApplicationListener.Builder
+                .create(this, "ApplicationListener")
+                .open(true)
+                .port(internetPort)
+                .protocol(ApplicationProtocol.HTTP)
+                .loadBalancer(balancer)
+                .build();
+
+        AddFixedResponseProps defaultResponse = AddFixedResponseProps.builder()
+                .statusCode("400")
+                .contentType(TEXT_PLAIN)
+                .messageBody("Route not found")
+                .build();
+
+        listener.addFixedResponse("DefaultResponse", defaultResponse);
 
         ///////////////////////////////////////////////////////////////////////////
         // Hosted Zone
@@ -128,7 +151,7 @@ public class NetworkStack extends Stack {
         ///////////////////////////////////////////////////////////////////////////
 
         ARecord.Builder
-                .create(this, "AliasRecord")
+                .create(this, "BalancerAlias")
                 .zone(zone)
                 .target(fromAlias(new LoadBalancerTarget(balancer)))
                 .build();
@@ -138,8 +161,8 @@ public class NetworkStack extends Stack {
         return cluster;
     }
 
-    public ApplicationLoadBalancer getBalancer() {
-        return balancer;
+    public ApplicationListener getListener() {
+        return listener;
     }
 
     public IHostedZone getZone() {
