@@ -4,7 +4,10 @@ import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Stack;
 import software.amazon.awscdk.services.ec2.*;
 import software.amazon.awscdk.services.ecs.Cluster;
-import software.amazon.awscdk.services.elasticloadbalancingv2.*;
+import software.amazon.awscdk.services.elasticloadbalancingv2.AddFixedResponseProps;
+import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationListener;
+import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationLoadBalancer;
+import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationProtocol;
 import software.amazon.awscdk.services.route53.ARecord;
 import software.amazon.awscdk.services.route53.HostedZoneAttributes;
 import software.amazon.awscdk.services.route53.IHostedZone;
@@ -19,7 +22,6 @@ import static software.amazon.awscdk.services.ec2.Port.tcp;
 import static software.amazon.awscdk.services.ec2.SubnetType.ISOLATED;
 import static software.amazon.awscdk.services.ec2.SubnetType.PUBLIC;
 import static software.amazon.awscdk.services.elasticloadbalancingv2.ContentType.APPLICATION_JSON;
-import static software.amazon.awscdk.services.elasticloadbalancingv2.ContentType.TEXT_PLAIN;
 import static software.amazon.awscdk.services.route53.HostedZone.fromHostedZoneAttributes;
 import static software.amazon.awscdk.services.route53.RecordTarget.fromAlias;
 
@@ -70,7 +72,7 @@ public class NetworkStack extends Stack {
         ///////////////////////////////////////////////////////////////////////////
 
         SecurityGroup httpsSecurityGroup = SecurityGroup.Builder
-                .create(this, "SecurityGroup")
+                .create(this, "PrivateLinkSecurityGroup")
                 .vpc(vpc)
                 .allowAllOutbound(true)
                 .build();
@@ -127,7 +129,7 @@ public class NetworkStack extends Stack {
         AddFixedResponseProps defaultResponse = AddFixedResponseProps.builder()
                 .statusCode("400")
                 .contentType(APPLICATION_JSON)
-                .messageBody("{\"message\":\"Unknown host\",\"errors\":[{\"code\":\"UNKNOWN_HOST\",\"message\":\"Please use AWS console to pick a proper value for Host header. It should be formatted as <branch_name>.veengu.xyz.\"}]}")
+                .messageBody("{\"message\":\"Route not found\",\"errors\":[{\"code\":\"ROUTE_NOT_FOUND\",\"message\":\"Please use console to find out a proper value of Host header. It should be formatted as <branch_name>.veengu.xyz.\"}]}")
                 .build();
 
         listener.addFixedResponse("DefaultResponse", defaultResponse);
