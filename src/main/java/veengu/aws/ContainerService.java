@@ -1,6 +1,5 @@
 package veengu.aws;
 
-import com.google.common.base.CaseFormat;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.services.ec2.SubnetSelection;
 import software.amazon.awscdk.services.ecr.IRepository;
@@ -16,6 +15,8 @@ import software.amazon.awscdk.services.route53.targets.LoadBalancerTarget;
 import java.util.List;
 import java.util.Map;
 
+import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
+import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static java.lang.String.valueOf;
 import static software.amazon.awscdk.core.Duration.seconds;
 import static software.amazon.awscdk.services.ec2.SubnetType.ISOLATED;
@@ -26,7 +27,7 @@ public class ContainerService extends Construct {
     private final FargateService service;
 
     private static String upperCamel(String string) {
-        return CaseFormat.LOWER_HYPHEN.to(CaseFormat.UPPER_CAMEL, string);
+        return LOWER_HYPHEN.to(UPPER_CAMEL, string);
     }
 
     public ContainerService(final Construct scope,
@@ -110,7 +111,7 @@ public class ContainerService extends Construct {
                 .build();
 
         ApplicationTargetGroup targetGroup = ApplicationTargetGroup.Builder
-                .create(listener, upperCamel(branchName) + "Group") // FIXME try to create inside this stack in 1.19.0
+                .create(listener.getStack(), upperCamel(branchName) + "Group") // FIXME try to create inside this stack in 1.19.0
                 .vpc(listener.getLoadBalancer().getVpc())
                 .port(containerPort)
                 .targets(List.of(service))
