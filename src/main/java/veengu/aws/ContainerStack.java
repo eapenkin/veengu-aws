@@ -3,7 +3,7 @@ package veengu.aws;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Stack;
 import software.amazon.awscdk.services.ec2.SubnetSelection;
-import software.amazon.awscdk.services.ecs.Cluster;
+import software.amazon.awscdk.services.ecs.ICluster;
 import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationListener;
 import software.amazon.awscdk.services.route53.IHostedZone;
 
@@ -17,7 +17,7 @@ public class ContainerStack extends Stack {
                           final String repositoryName,
                           final String branchName,
                           final int routingPriority,
-                          final Cluster cluster,
+                          final ICluster cluster,
                           final SubnetSelection placement,
                           final IHostedZone zone,
                           final ApplicationListener listener) {

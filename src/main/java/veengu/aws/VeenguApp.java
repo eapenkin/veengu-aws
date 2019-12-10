@@ -14,10 +14,23 @@ public class VeenguApp {
 
     public static void main(final String[] args) {
         App app = new App();
+
+        ///////////////////////////////////////////////////////////////////////////
+        // Common Components
+        ///////////////////////////////////////////////////////////////////////////
         NetworkStack networkStack = new NetworkStack(app, "NetworkStack", INTERNET_PORT, INTERNET_DOMAIN, DOMAIN_ID);
-        DatabaseStack databaseStack = new DatabaseStack(app, "DatabaseStack", networkStack.getVpc(), networkStack.getPlacement());
-        ContainerStack demoStack = new ContainerStack(app, "DemoContainer", VEENGU_REPO, DEMO_BRANCH, 10, networkStack.getCluster(), networkStack.getPlacement(), networkStack.getZone(), networkStack.getListener());
-        ContainerStack developStack = new ContainerStack(app, "DevelopContainer", VEENGU_REPO, DEVELOP_BRANCH, 20, networkStack.getCluster(), networkStack.getPlacement(), networkStack.getZone(), networkStack.getListener());
+
+        ///////////////////////////////////////////////////////////////////////////
+        // Demo Environment
+        ///////////////////////////////////////////////////////////////////////////
+        ContainerStack demoContainer = new ContainerStack(app, "DemoContainer", VEENGU_REPO, DEMO_BRANCH, 10, networkStack.getCluster(), networkStack.getPlacement(), networkStack.getZone(), networkStack.getListener());
+
+        ///////////////////////////////////////////////////////////////////////////
+        // Develop Environment
+        ///////////////////////////////////////////////////////////////////////////
+        DatabaseStack developDatabase = new DatabaseStack(app, "DatabaseStack", networkStack.getVpc(), networkStack.getPlacement());
+        ContainerStack developContainer = new ContainerStack(app, "DevelopContainer", VEENGU_REPO, DEVELOP_BRANCH, 20, networkStack.getCluster(), networkStack.getPlacement(), networkStack.getZone(), networkStack.getListener());
+
         app.synth();
     }
 }

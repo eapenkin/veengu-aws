@@ -36,7 +36,7 @@ public class ContainerService extends Construct {
                             final String healthPath,
                             final int routingPriority,
                             final IRepository registry,
-                            final Cluster cluster,
+                            final ICluster cluster,
                             final SubnetSelection placement,
                             final IHostedZone zone,
                             final ApplicationListener listener) {
