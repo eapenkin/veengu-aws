@@ -33,6 +33,10 @@ public class NetworkStack extends Stack {
 
     private final IHostedZone zone;
 
+    private final Vpc vpc;
+
+    private final SubnetSelection placement;
+
     public NetworkStack(final Construct scope,
                         final String id,
                         final int internetPort,
@@ -56,14 +60,14 @@ public class NetworkStack extends Stack {
                 .cidrMask(18)
                 .build();
 
-        Vpc vpc = Vpc.Builder
+        vpc = Vpc.Builder
                 .create(this, "VPC")
                 .natGateways(0)
                 .maxAzs(2)
                 .subnetConfiguration(List.of(publicSubnet, isolatedSubnet))
                 .build();
 
-        SubnetSelection isolatedSubnets = SubnetSelection.builder()
+        placement = SubnetSelection.builder()
                 .subnetType(ISOLATED)
                 .build();
 
@@ -80,19 +84,19 @@ public class NetworkStack extends Stack {
 
         InterfaceVpcEndpointOptions dockerInterface = InterfaceVpcEndpointOptions.builder()
                 .service(ECR_DOCKER)
-                .subnets(isolatedSubnets)
+                .subnets(placement)
                 .securityGroups(List.of(httpsSecurityGroup))
                 .build();
 
         InterfaceVpcEndpointOptions logsInterface = InterfaceVpcEndpointOptions.builder()
                 .service(CLOUDWATCH_LOGS)
-                .subnets(isolatedSubnets)
+                .subnets(placement)
                 .securityGroups(List.of(httpsSecurityGroup))
                 .build();
 
         GatewayVpcEndpointOptions s3Gateway = GatewayVpcEndpointOptions.builder()
                 .service(GatewayVpcEndpointAwsService.S3)
-                .subnets(List.of(isolatedSubnets))
+                .subnets(List.of(placement))
                 .build();
 
         vpc.addInterfaceEndpoint("RegistryInterface", dockerInterface);
@@ -166,5 +170,13 @@ public class NetworkStack extends Stack {
 
     public IHostedZone getZone() {
         return zone;
+    }
+
+    public Vpc getVpc() {
+        return vpc;
+    }
+
+    public SubnetSelection getPlacement() {
+        return placement;
     }
 }

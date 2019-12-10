@@ -19,7 +19,6 @@ import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static java.lang.String.valueOf;
 import static software.amazon.awscdk.core.Duration.seconds;
-import static software.amazon.awscdk.services.ec2.SubnetType.ISOLATED;
 import static software.amazon.awscdk.services.route53.RecordTarget.fromAlias;
 
 public class ContainerService extends Construct {
@@ -38,8 +37,9 @@ public class ContainerService extends Construct {
                             final int routingPriority,
                             final IRepository registry,
                             final Cluster cluster,
-                            final ApplicationListener listener,
-                            final IHostedZone zone) {
+                            final SubnetSelection placement,
+                            final IHostedZone zone,
+                            final ApplicationListener listener) {
         super(scope, id);
 
         ///////////////////////////////////////////////////////////////////////////
@@ -83,15 +83,11 @@ public class ContainerService extends Construct {
         // Fargate Service
         ///////////////////////////////////////////////////////////////////////////
 
-        SubnetSelection isolatedSubnets = SubnetSelection.builder()
-                .subnetType(ISOLATED)
-                .build();
-
         service = FargateService.Builder
                 .create(this, "FargateService")
                 .cluster(cluster)
                 .taskDefinition(taskDefinition)
-                .vpcSubnets(isolatedSubnets)
+                .vpcSubnets(placement)
                 .assignPublicIp(false)
                 .desiredCount(0)
                 .minHealthyPercent(100)

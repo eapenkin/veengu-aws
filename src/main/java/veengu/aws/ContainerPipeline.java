@@ -40,8 +40,8 @@ public class ContainerPipeline extends Construct {
 
     public ContainerPipeline(final Construct scope,
                              final String id,
-                             final String region,
-                             final String account,
+                             final String region, // TODO remove
+                             final String account, // TODO remove
                              final String repositoryName,
                              final String branchName,
                              final int containerPort,

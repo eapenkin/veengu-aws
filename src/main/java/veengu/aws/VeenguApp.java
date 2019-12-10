@@ -15,8 +15,9 @@ public class VeenguApp {
     public static void main(final String[] args) {
         App app = new App();
         NetworkStack networkStack = new NetworkStack(app, "NetworkStack", INTERNET_PORT, INTERNET_DOMAIN, DOMAIN_ID);
-        ContainerStack demoStack = new ContainerStack(app, "DemoBranch", VEENGU_REPO, DEMO_BRANCH, 10, networkStack.getCluster(), networkStack.getListener(), networkStack.getZone());
-        ContainerStack developStack = new ContainerStack(app, "DevelopBranch", VEENGU_REPO, DEVELOP_BRANCH, 20, networkStack.getCluster(), networkStack.getListener(), networkStack.getZone());
+        DatabaseStack databaseStack = new DatabaseStack(app, "DatabaseStack", networkStack.getVpc(), networkStack.getPlacement());
+        ContainerStack demoStack = new ContainerStack(app, "DemoContainer", VEENGU_REPO, DEMO_BRANCH, 10, networkStack.getCluster(), networkStack.getPlacement(), networkStack.getZone(), networkStack.getListener());
+        ContainerStack developStack = new ContainerStack(app, "DevelopContainer", VEENGU_REPO, DEVELOP_BRANCH, 20, networkStack.getCluster(), networkStack.getPlacement(), networkStack.getZone(), networkStack.getListener());
         app.synth();
     }
 }
