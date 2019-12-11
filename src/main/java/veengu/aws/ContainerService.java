@@ -55,7 +55,13 @@ public class ContainerService extends Construct {
         ContainerImage containerImage = ContainerImage.fromEcrRepository(registry);
 
         Map<String, String> environmentVariables = Map.of(
-                "CONTAINER_PORT", valueOf(containerPort));
+                "SERVER_ADDRESS", "0.0.0.0",
+                "SERVER_PORT", valueOf(containerPort),
+                "DATASOURCE_URL", "jdbc:h2:mem:test;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1",
+                "DATASOURCE_USERNAME", "",
+                "DATASOURCE_PASSWORD", "",
+                "SCHEMA_USERNAME", "",
+                "SCHEMA_PASSWORD", "");
 
         PortMapping portMapping = PortMapping.builder()
                 .containerPort(containerPort)

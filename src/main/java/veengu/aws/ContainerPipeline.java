@@ -71,12 +71,10 @@ public class ContainerPipeline extends Construct {
 
         Map<String, BuildEnvironmentVariable> environmentVariables = new TreeMap<>(Map.of(
                 "AWS_DEFAULT_REGION", plaintext(region),
-                "CONTAINER_PORT", plaintext(containerPort),
+                "SERVER_PORT", plaintext(containerPort),
                 "CONTAINER_NAME", plaintext(fargateService.getTaskDefinition().getDefaultContainer().getContainerName()),
                 "IMAGE_NAME", plaintext(dockerRegistry.getRepositoryName()),
                 "REGISTRY_HOST", plaintext(account + ".dkr.ecr." + region + ".amazonaws.com")));
-
-        // TODO test with BitBucket
 
         Project buildProject = Project.Builder
                 .create(this, "Builder")
