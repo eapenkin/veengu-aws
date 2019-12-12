@@ -8,12 +8,14 @@ import software.amazon.awscdk.services.elasticloadbalancingv2.AddApplicationTarg
 import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationListener;
 import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationTargetGroup;
 import software.amazon.awscdk.services.elasticloadbalancingv2.HealthCheck;
+import software.amazon.awscdk.services.rds.Endpoint;
 import software.amazon.awscdk.services.route53.ARecord;
 import software.amazon.awscdk.services.route53.IHostedZone;
 import software.amazon.awscdk.services.route53.targets.LoadBalancerTarget;
 
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
@@ -35,6 +37,7 @@ public class ContainerService extends Construct {
                             final int containerPort,
                             final String healthPath,
                             final int routingPriority,
+                            final Endpoint endpoint,
                             final IRepository registry,
                             final ICluster cluster,
                             final SubnetSelection placement,
@@ -54,14 +57,14 @@ public class ContainerService extends Construct {
 
         ContainerImage containerImage = ContainerImage.fromEcrRepository(registry);
 
-        Map<String, String> environmentVariables = Map.of(
+        Map<String, String> environmentVariables = new TreeMap<>(Map.of(
                 "SERVER_ADDRESS", "0.0.0.0",
                 "SERVER_PORT", valueOf(containerPort),
-                "DATASOURCE_URL", "jdbc:h2:mem:test;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1",
-                "DATASOURCE_USERNAME", "",
-                "DATASOURCE_PASSWORD", "",
-                "SCHEMA_USERNAME", "",
-                "SCHEMA_PASSWORD", "");
+                "DATASOURCE_URL", "jdbc:mysql://" + endpoint.getSocketAddress(),
+                "DATASOURCE_USERNAME", "user",
+                "DATASOURCE_PASSWORD", "password",
+                "SCHEMA_USERNAME", "admin",
+                "SCHEMA_PASSWORD", "password"));
 
         PortMapping portMapping = PortMapping.builder()
                 .containerPort(containerPort)

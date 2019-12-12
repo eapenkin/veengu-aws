@@ -19,15 +19,15 @@ public class ContainerRegistry extends Construct {
                              final String name) {
         super(scope, id);
 
-        LifecycleRule oneUntaggedImage = LifecycleRule.builder()
+        LifecycleRule oneDayImage = LifecycleRule.builder()
                 .tagStatus(ANY)
                 .maxImageAge(days(1))
                 .build();
 
-        this.registry = Repository.Builder
+        registry = Repository.Builder
                 .create(this, "Registry")
                 .repositoryName(name)
-                .lifecycleRules(List.of(oneUntaggedImage))
+                .lifecycleRules(List.of(oneDayImage))
                 .build();
     }
 

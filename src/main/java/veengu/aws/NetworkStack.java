@@ -75,23 +75,23 @@ public class NetworkStack extends Stack {
         // AWS PrivateLink
         ///////////////////////////////////////////////////////////////////////////
 
-        SecurityGroup httpsSecurityGroup = SecurityGroup.Builder
+        SecurityGroup securityGroup = SecurityGroup.Builder
                 .create(this, "PrivateLinkSecurityGroup")
                 .vpc(vpc)
                 .allowAllOutbound(true)
                 .build();
-        httpsSecurityGroup.addIngressRule(anyIpv4(), tcp(443));
+        securityGroup.addIngressRule(anyIpv4(), tcp(443));
 
         InterfaceVpcEndpointOptions dockerInterface = InterfaceVpcEndpointOptions.builder()
                 .service(ECR_DOCKER)
                 .subnets(placement)
-                .securityGroups(List.of(httpsSecurityGroup))
+                .securityGroups(List.of(securityGroup))
                 .build();
 
         InterfaceVpcEndpointOptions logsInterface = InterfaceVpcEndpointOptions.builder()
                 .service(CLOUDWATCH_LOGS)
                 .subnets(placement)
-                .securityGroups(List.of(httpsSecurityGroup))
+                .securityGroups(List.of(securityGroup))
                 .build();
 
         GatewayVpcEndpointOptions s3Gateway = GatewayVpcEndpointOptions.builder()

@@ -5,6 +5,7 @@ import software.amazon.awscdk.core.Stack;
 import software.amazon.awscdk.services.ec2.SubnetSelection;
 import software.amazon.awscdk.services.ecs.ICluster;
 import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationListener;
+import software.amazon.awscdk.services.rds.Endpoint;
 import software.amazon.awscdk.services.route53.IHostedZone;
 
 public class ContainerStack extends Stack {
@@ -17,13 +18,14 @@ public class ContainerStack extends Stack {
                           final String repositoryName,
                           final String branchName,
                           final int routingPriority,
+                          final Endpoint endpoint,
                           final ICluster cluster,
                           final SubnetSelection placement,
                           final IHostedZone zone,
                           final ApplicationListener listener) {
         super(scope, id);
         ContainerRegistry containerRegistry = new ContainerRegistry(this, "ContainerRegistry", repositoryName + "/" + branchName);
-        ContainerService containerService = new ContainerService(this, "ContainerService", branchName, CONTAINER_PORT, HEALTH_CHECKS, routingPriority, containerRegistry.getRegistry(), cluster, placement, zone, listener);
+        ContainerService containerService = new ContainerService(this, "ContainerService", branchName, CONTAINER_PORT, HEALTH_CHECKS, routingPriority, endpoint, containerRegistry.getRegistry(), cluster, placement, zone, listener);
         ContainerPipeline containerPipeline = new ContainerPipeline(this, "ContainerPipeline", getRegion(), getAccount(), repositoryName, branchName, CONTAINER_PORT, containerRegistry.getRegistry(), containerService.getService());
     }
 }

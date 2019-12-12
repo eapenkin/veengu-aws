@@ -4,6 +4,7 @@ import software.amazon.awscdk.core.App;
 
 public class VeenguApp {
 
+    private static final int DATABASE_PORT = 3306;
     private static final int INTERNET_PORT = 80;
     private static final String INTERNET_DOMAIN = "veengu.xyz";
     private static final String DOMAIN_ID = "Z3K66451X409D1";
@@ -18,18 +19,19 @@ public class VeenguApp {
         ///////////////////////////////////////////////////////////////////////////
         // Common Components
         ///////////////////////////////////////////////////////////////////////////
-        NetworkStack networkStack = new NetworkStack(app, "NetworkStack", INTERNET_PORT, INTERNET_DOMAIN, DOMAIN_ID);
+        NetworkStack net = new NetworkStack(app, "NetworkStack", INTERNET_PORT, INTERNET_DOMAIN, DOMAIN_ID);
 
         ///////////////////////////////////////////////////////////////////////////
         // Demo Environment
         ///////////////////////////////////////////////////////////////////////////
-        ContainerStack demoContainer = new ContainerStack(app, "DemoContainer", VEENGU_REPO, DEMO_BRANCH, 10, networkStack.getCluster(), networkStack.getPlacement(), networkStack.getZone(), networkStack.getListener());
+        DatabaseStack demoDb = new DatabaseStack(app, "DemoDatabase", DATABASE_PORT, net.getVpc(), net.getPlacement());
+        ContainerStack demoApp = new ContainerStack(app, "DemoContainer", VEENGU_REPO, DEMO_BRANCH, 10, demoDb.getEndpoint(), net.getCluster(), net.getPlacement(), net.getZone(), net.getListener());
 
         ///////////////////////////////////////////////////////////////////////////
         // Develop Environment
         ///////////////////////////////////////////////////////////////////////////
-        DatabaseStack developDatabase = new DatabaseStack(app, "DatabaseStack", networkStack.getVpc(), networkStack.getPlacement());
-        ContainerStack developContainer = new ContainerStack(app, "DevelopContainer", VEENGU_REPO, DEVELOP_BRANCH, 20, networkStack.getCluster(), networkStack.getPlacement(), networkStack.getZone(), networkStack.getListener());
+        DatabaseStack devDb = new DatabaseStack(app, "DevelopDatabase", DATABASE_PORT, net.getVpc(), net.getPlacement());
+        ContainerStack devApp = new ContainerStack(app, "DevelopContainer", VEENGU_REPO, DEVELOP_BRANCH, 20, devDb.getEndpoint(), net.getCluster(), net.getPlacement(), net.getZone(), net.getListener());
 
         app.synth();
     }
