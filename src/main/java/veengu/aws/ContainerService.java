@@ -37,7 +37,7 @@ public class ContainerService extends Construct {
                             final int containerPort,
                             final String healthPath,
                             final int routingPriority,
-                            final Endpoint endpoint,
+                            final DatabaseStack databaseStack,
                             final IRepository registry,
                             final ICluster cluster,
                             final SubnetSelection placement,
@@ -60,7 +60,7 @@ public class ContainerService extends Construct {
         Map<String, String> environmentVariables = new TreeMap<>(Map.of(
                 "SERVER_ADDRESS", "0.0.0.0",
                 "SERVER_PORT", valueOf(containerPort),
-                "DATASOURCE_URL", "jdbc:mysql://" + endpoint.getSocketAddress(),
+                "DATASOURCE_URL", "jdbc:mysql://" + databaseStack.getEndpoint().getSocketAddress(),
                 "DATASOURCE_USERNAME", "user",
                 "DATASOURCE_PASSWORD", "password",
                 "SCHEMA_USERNAME", "admin",

@@ -24,14 +24,14 @@ public class VeenguApp {
         ///////////////////////////////////////////////////////////////////////////
         // Demo Environment
         ///////////////////////////////////////////////////////////////////////////
-        DatabaseStack demoDb = new DatabaseStack(app, "DemoDatabase", DATABASE_PORT, net.getVpc(), net.getPlacement());
-        ContainerStack demoApp = new ContainerStack(app, "DemoContainer", VEENGU_REPO, DEMO_BRANCH, 10, demoDb.getEndpoint(), net.getCluster(), net.getPlacement(), net.getZone(), net.getListener());
+        DatabaseStack demoDb = new DatabaseStack(app, "DemoDatabase", net, DATABASE_PORT);
+        ContainerStack demoApp = new ContainerStack(app, "DemoContainer", net, demoDb, VEENGU_REPO, DEMO_BRANCH, 10);
 
         ///////////////////////////////////////////////////////////////////////////
         // Develop Environment
         ///////////////////////////////////////////////////////////////////////////
-        DatabaseStack devDb = new DatabaseStack(app, "DevelopDatabase", DATABASE_PORT, net.getVpc(), net.getPlacement());
-        ContainerStack devApp = new ContainerStack(app, "DevelopContainer", VEENGU_REPO, DEVELOP_BRANCH, 20, devDb.getEndpoint(), net.getCluster(), net.getPlacement(), net.getZone(), net.getListener());
+        DatabaseStack devDb = new DatabaseStack(app, "DevelopDatabase", net, DATABASE_PORT);
+        ContainerStack devApp = new ContainerStack(app, "DevelopContainer", net, devDb, VEENGU_REPO, DEVELOP_BRANCH, 20);
 
         app.synth();
     }

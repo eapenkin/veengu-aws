@@ -4,8 +4,6 @@ import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Stack;
 import software.amazon.awscdk.services.ec2.InstanceType;
 import software.amazon.awscdk.services.ec2.SecurityGroup;
-import software.amazon.awscdk.services.ec2.SubnetSelection;
-import software.amazon.awscdk.services.ec2.Vpc;
 import software.amazon.awscdk.services.rds.DatabaseInstance;
 import software.amazon.awscdk.services.rds.Endpoint;
 
@@ -24,14 +22,13 @@ public class DatabaseStack extends Stack {
 
     public DatabaseStack(final Construct scope,
                          final String id,
-                         final int databasePort,
-                         final Vpc vpc,
-                         final SubnetSelection placement) {
+                         final NetworkStack networkStack,
+                         final int databasePort) {
         super(scope, id);
 
         SecurityGroup securityGroup = SecurityGroup.Builder
                 .create(this, "DatabaseSecurityGroup")
-                .vpc(vpc)
+                .vpc(networkStack.getVpc())
                 .allowAllOutbound(false)
                 .build();
         securityGroup.addIngressRule(anyIpv4(), tcp(databasePort));
@@ -40,8 +37,8 @@ public class DatabaseStack extends Stack {
 
         DatabaseInstance database = DatabaseInstance.Builder
                 .create(this, "Database")
-                .vpc(vpc)
-                .vpcPlacement(placement)
+                .vpc(networkStack.getVpc())
+                .vpcPlacement(networkStack.getPlacement())
                 .instanceClass(instanceClass)
                 .engine(MYSQL)
                 .engineVersion("8.0.16")

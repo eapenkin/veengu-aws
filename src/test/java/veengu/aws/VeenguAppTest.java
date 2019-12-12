@@ -11,10 +11,10 @@ public class VeenguAppTest {
 
         NetworkStack net = new NetworkStack(app, "BaseStack", 9999, "veengu.xyz", "Z3K66451X409D1");
 
-        DatabaseStack db1 = new DatabaseStack(app, "DatabaseStack1", 3333, net.getVpc(), net.getPlacement());
-        ContainerStack stack1 = new ContainerStack(app, "TestStack1", "TEST_REPO", "TEST_BRANCH_1", 10, db1.getEndpoint(), net.getCluster(), net.getPlacement(), net.getZone(), net.getListener());
+        DatabaseStack db1 = new DatabaseStack(app, "DatabaseStack1", net, 3333);
+        ContainerStack stack1 = new ContainerStack(app, "TestStack1", net, db1, "TEST_REPO", "TEST_BRANCH_1", 10);
 
-        DatabaseStack db2 = new DatabaseStack(app, "DatabaseStack2", 3333, net.getVpc(), net.getPlacement());
-        ContainerStack stack2 = new ContainerStack(app, "TestStack2", "TEST_REPO", "TEST_BRANCH_2", 20, db2.getEndpoint(), net.getCluster(), net.getPlacement(), net.getZone(), net.getListener());
+        DatabaseStack db2 = new DatabaseStack(app, "DatabaseStack2", net, 3333);
+        ContainerStack stack2 = new ContainerStack(app, "TestStack2", net, db2, "TEST_REPO", "TEST_BRANCH_2", 20);
     }
 }
