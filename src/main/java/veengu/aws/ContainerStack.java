@@ -175,7 +175,7 @@ public class ContainerStack extends Stack {
                 .target(fromAlias(new LoadBalancerTarget(networkStack.getListener().getLoadBalancer())))
                 .build();
 
-        networkStack.getListener().addTargetGroups(upperCamel(branchName) + "Rule", listenerRule);
+        networkStack.getListener().addTargetGroups(upperCamel(branchName), listenerRule);
 
         ///////////////////////////////////////////////////////////////////////////
         // Git Repository
