@@ -50,11 +50,11 @@ public class DatabaseStack extends Stack {
                 .engineVersion("8.0.16")
                 .securityGroups(List.of(securityGroup))
                 .port(databasePort)
-                .allocatedStorage(20)
-                .backupRetention(days(1))
-                .deletionProtection(false)
                 .masterUsername(SCHEMA_USERNAME)
                 .masterUserPassword(plainText(SCHEMA_PASSWORD))
+                .allocatedStorage(20)
+                .backupRetention(days(0))
+                .deletionProtection(false)
                 .build();
 
         endpoint = database.getInstanceEndpoint();
