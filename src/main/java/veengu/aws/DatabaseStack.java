@@ -9,6 +9,7 @@ import software.amazon.awscdk.services.rds.Endpoint;
 
 import java.util.List;
 
+import static software.amazon.awscdk.core.Duration.days;
 import static software.amazon.awscdk.core.SecretValue.plainText;
 import static software.amazon.awscdk.services.ec2.InstanceClass.BURSTABLE2;
 import static software.amazon.awscdk.services.ec2.InstanceSize.MICRO;
@@ -45,6 +46,7 @@ public class DatabaseStack extends Stack {
                 .securityGroups(List.of(securityGroup))
                 .port(databasePort)
                 .allocatedStorage(20)
+                .backupRetention(days(1))
                 .deletionProtection(false)
                 .masterUsername("admin") // FIXME replace with parameters
                 .masterUserPassword(plainText("password")) // FIXME replace with parameters
@@ -53,7 +55,7 @@ public class DatabaseStack extends Stack {
         endpoint = database.getInstanceEndpoint();
     }
 
-    public Endpoint getEndpoint() {
-        return endpoint;
+    public String getSocketAddress() {
+        return endpoint.getSocketAddress();
     }
 }

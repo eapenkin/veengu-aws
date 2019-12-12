@@ -7,7 +7,6 @@ import software.amazon.awscdk.services.ecs.Cluster;
 import software.amazon.awscdk.services.elasticloadbalancingv2.AddFixedResponseProps;
 import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationListener;
 import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationLoadBalancer;
-import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationProtocol;
 import software.amazon.awscdk.services.route53.ARecord;
 import software.amazon.awscdk.services.route53.HostedZoneAttributes;
 import software.amazon.awscdk.services.route53.IHostedZone;
@@ -21,6 +20,7 @@ import static software.amazon.awscdk.services.ec2.Peer.anyIpv4;
 import static software.amazon.awscdk.services.ec2.Port.tcp;
 import static software.amazon.awscdk.services.ec2.SubnetType.ISOLATED;
 import static software.amazon.awscdk.services.ec2.SubnetType.PUBLIC;
+import static software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationProtocol.HTTP;
 import static software.amazon.awscdk.services.elasticloadbalancingv2.ContentType.APPLICATION_JSON;
 import static software.amazon.awscdk.services.route53.HostedZone.fromHostedZoneAttributes;
 import static software.amazon.awscdk.services.route53.RecordTarget.fromAlias;
@@ -126,7 +126,7 @@ public class NetworkStack extends Stack {
                 .create(this, "HTTPListener")
                 .open(true)
                 .port(internetPort)
-                .protocol(ApplicationProtocol.HTTP)
+                .protocol(HTTP)
                 .loadBalancer(balancer)
                 .build();
 
