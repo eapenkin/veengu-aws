@@ -33,7 +33,7 @@ public class DatabaseStack extends Stack {
         super(scope, id);
 
         SecurityGroup securityGroup = SecurityGroup.Builder
-                .create(this, "DatabaseSecurityGroup")
+                .create(this, "DB/SecurityGroup")
                 .vpc(networkStack.getVpc())
                 .allowAllOutbound(false)
                 .build();
@@ -42,7 +42,7 @@ public class DatabaseStack extends Stack {
         InstanceType instanceClass = InstanceType.of(BURSTABLE2, MICRO);
 
         DatabaseInstance database = DatabaseInstance.Builder
-                .create(this, "Database")
+                .create(this, "DB")
                 .vpc(networkStack.getVpc())
                 .vpcPlacement(networkStack.getPlacement())
                 .instanceClass(instanceClass)

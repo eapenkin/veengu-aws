@@ -28,13 +28,9 @@ import static software.amazon.awscdk.services.route53.RecordTarget.fromAlias;
 public class NetworkStack extends Stack {
 
     private final Cluster cluster;
-
     private final ApplicationListener listener;
-
     private final IHostedZone zone;
-
     private final Vpc vpc;
-
     private final SubnetSelection placement;
 
     public NetworkStack(final Construct scope,
@@ -76,7 +72,7 @@ public class NetworkStack extends Stack {
         ///////////////////////////////////////////////////////////////////////////
 
         SecurityGroup securityGroup = SecurityGroup.Builder
-                .create(this, "PrivateLinkSecurityGroup")
+                .create(this, "PrivateLink/SecurityGroup")
                 .vpc(vpc)
                 .allowAllOutbound(true)
                 .build();
@@ -117,13 +113,13 @@ public class NetworkStack extends Stack {
         ///////////////////////////////////////////////////////////////////////////
 
         ApplicationLoadBalancer balancer = ApplicationLoadBalancer.Builder
-                .create(this, "ELB")
+                .create(this, "ALB")
                 .vpc(vpc)
                 .internetFacing(true)
                 .build();
 
         listener = ApplicationListener.Builder
-                .create(this, "HTTPListener")
+                .create(this, "HTTP")
                 .open(true)
                 .port(internetPort)
                 .protocol(HTTP)
@@ -154,7 +150,7 @@ public class NetworkStack extends Stack {
         ///////////////////////////////////////////////////////////////////////////
 
         ARecord.Builder
-                .create(this, "Alias")
+                .create(this, "ARecord")
                 .zone(zone)
                 .target(fromAlias(new LoadBalancerTarget(balancer)))
                 .build();

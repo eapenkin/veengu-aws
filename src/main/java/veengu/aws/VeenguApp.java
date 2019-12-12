@@ -19,7 +19,7 @@ public class VeenguApp {
         ///////////////////////////////////////////////////////////////////////////
         // Common Components
         ///////////////////////////////////////////////////////////////////////////
-        NetworkStack net = new NetworkStack(app, "NetworkStack", INTERNET_PORT, INTERNET_DOMAIN, DOMAIN_ID);
+        NetworkStack net = new NetworkStack(app, "Network", INTERNET_PORT, INTERNET_DOMAIN, DOMAIN_ID);
 
         ///////////////////////////////////////////////////////////////////////////
         // Demo Environment
