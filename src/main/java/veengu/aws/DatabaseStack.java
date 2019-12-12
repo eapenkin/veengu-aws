@@ -19,6 +19,11 @@ import static software.amazon.awscdk.services.rds.DatabaseInstanceEngine.MYSQL;
 
 public class DatabaseStack extends Stack {
 
+    private static final String USERNAME = "user";
+    private static final String PASSWORD = "enigma99";
+    private static final String SCHEMA_USERNAME = "admin";
+    private static final String SCHEMA_PASSWORD = "baobab88";
+
     private final Endpoint endpoint;
 
     public DatabaseStack(final Construct scope,
@@ -48,14 +53,30 @@ public class DatabaseStack extends Stack {
                 .allocatedStorage(20)
                 .backupRetention(days(1))
                 .deletionProtection(false)
-                .masterUsername("admin") // FIXME replace with parameters
-                .masterUserPassword(plainText("password")) // FIXME replace with parameters
+                .masterUsername(SCHEMA_USERNAME)
+                .masterUserPassword(plainText(SCHEMA_PASSWORD))
                 .build();
 
         endpoint = database.getInstanceEndpoint();
     }
 
-    public String getSocketAddress() {
+    public String getAddress() {
         return endpoint.getSocketAddress();
+    }
+
+    public String getUsername() {
+        return USERNAME;
+    }
+
+    public String getPassword() {
+        return PASSWORD;
+    }
+
+    public String getSchemaUsername() {
+        return SCHEMA_USERNAME;
+    }
+
+    public String getSchemaPassword() {
+        return SCHEMA_PASSWORD;
     }
 }

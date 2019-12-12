@@ -96,11 +96,11 @@ public class ContainerStack extends Stack {
         Map<String, String> environmentVariables = new TreeMap<>(Map.of(
                 "SERVER_ADDRESS", "0.0.0.0",
                 "SERVER_PORT", valueOf(CONTAINER_PORT),
-                "DATASOURCE_URL", "jdbc:mysql://" + databaseStack.getSocketAddress(),
-                "DATASOURCE_USERNAME", "user",
-                "DATASOURCE_PASSWORD", "password",
-                "SCHEMA_USERNAME", "admin",
-                "SCHEMA_PASSWORD", "password"));
+                "DATASOURCE_URL", "jdbc:mysql://" + databaseStack.getAddress(),
+                "DATASOURCE_USERNAME", databaseStack.getUsername(),
+                "DATASOURCE_PASSWORD", databaseStack.getPassword(),
+                "SCHEMA_USERNAME", databaseStack.getSchemaUsername(),
+                "SCHEMA_PASSWORD", databaseStack.getSchemaPassword()));
 
         PortMapping portMapping = PortMapping.builder()
                 .containerPort(CONTAINER_PORT)
