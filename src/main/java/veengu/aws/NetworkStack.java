@@ -72,7 +72,7 @@ public class NetworkStack extends Stack {
         ///////////////////////////////////////////////////////////////////////////
 
         SecurityGroup securityGroup = SecurityGroup.Builder
-                .create(this, "PrivateLink/SecurityGroup")
+                .create(this, "PLSecurityGroup")
                 .vpc(vpc)
                 .allowAllOutbound(true)
                 .build();

@@ -33,7 +33,7 @@ public class DatabaseStack extends Stack {
         super(scope, id);
 
         SecurityGroup securityGroup = SecurityGroup.Builder
-                .create(this, "DB/SecurityGroup")
+                .create(this, "DBSecurityGroup")
                 .vpc(networkStack.getVpc())
                 .allowAllOutbound(false)
                 .build();
