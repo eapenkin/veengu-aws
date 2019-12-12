@@ -152,7 +152,7 @@ public class ContainerStack extends Stack {
                 .build();
 
         ApplicationTargetGroup targetGroup = ApplicationTargetGroup.Builder
-                .create(networkStack, upperCamel(branchName) + "Group") // FIXME try to create inside this stack in 1.19.0
+                .create(networkStack, upperCamel(branchName) + "Target") // FIXME try to create inside this stack in 1.19.0
                 .vpc(networkStack.getVpc())
                 .port(CONTAINER_PORT)
                 .targets(List.of(service))
@@ -175,7 +175,7 @@ public class ContainerStack extends Stack {
                 .target(fromAlias(new LoadBalancerTarget(networkStack.getListener().getLoadBalancer())))
                 .build();
 
-        networkStack.getListener().addTargetGroups(upperCamel(branchName) + "Listener", listenerRule);
+        networkStack.getListener().addTargetGroups(upperCamel(branchName) + "Rule", listenerRule);
 
         ///////////////////////////////////////////////////////////////////////////
         // Git Repository
