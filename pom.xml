@@ -9,7 +9,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <aws.cdk.version>1.18.0</aws.cdk.version>
+        <aws.cdk.version>1.19.0</aws.cdk.version>
     </properties>
 
     <build>
@@ -48,12 +48,27 @@
         </dependency>
         <dependency>
             <groupId>software.amazon.awscdk</groupId>
-            <artifactId>ecs-patterns</artifactId>
+            <artifactId>ecs</artifactId>
             <version>${aws.cdk.version}</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.awscdk</groupId>
             <artifactId>rds</artifactId>
+            <version>${aws.cdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awscdk</groupId>
+            <artifactId>kinesis</artifactId>
+            <version>${aws.cdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awscdk</groupId>
+            <artifactId>dms</artifactId>
+            <version>${aws.cdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awscdk</groupId>
+            <artifactId>cdk-customresources</artifactId>
             <version>${aws.cdk.version}</version>
         </dependency>
         <dependency>
