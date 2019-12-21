@@ -33,11 +33,6 @@ public class StreamingStack extends Stack {
                 .create("dms.amazonaws.com")
                 .build();
 
-        Role targetRole = Role.Builder
-                .create(this, "TargetRole")
-                .assumedBy(principal)
-                .build();
-
         Role vpcRole = Role.Builder
                 .create(this, "VPCRole")
                 .assumedBy(principal)
@@ -81,11 +76,11 @@ public class StreamingStack extends Stack {
         subnetGroup.getNode().addDependency(vpcRole);
 
         ///////////////////////////////////////////////////////////////////////////
-        // Source Endpoint
+        // MySQL Endpoint
         ///////////////////////////////////////////////////////////////////////////
 
-        CfnEndpoint source = CfnEndpoint.Builder
-                .create(this, "Source")
+        CfnEndpoint databaseSource = CfnEndpoint.Builder
+                .create(this, "DatabaseSource")
                 .endpointType("source")
                 .engineName("mysql")
                 .serverName(databaseStack.getHost())
@@ -95,23 +90,28 @@ public class StreamingStack extends Stack {
                 .build();
 
         ///////////////////////////////////////////////////////////////////////////
-        // Target Endpoint
+        // Kinesis Endpoint
         ///////////////////////////////////////////////////////////////////////////
+
+        Role streamRole = Role.Builder
+                .create(this, "StreamRole")
+                .assumedBy(principal)
+                .build();
 
         Stream stream = Stream.Builder
                 .create(this, "Stream")
                 .shardCount(1)
                 .build();
-        stream.grantWrite(targetRole);
+        stream.grantWrite(streamRole);
 
         KinesisSettingsProperty kinesisSettings = KinesisSettingsProperty.builder()
                 .messageFormat("json")
                 .streamArn(stream.getStreamArn())
-                .serviceAccessRoleArn(targetRole.getRoleArn())
+                .serviceAccessRoleArn(streamRole.getRoleArn())
                 .build();
 
-        CfnEndpoint target = CfnEndpoint.Builder
-                .create(this, "Target")
+        CfnEndpoint streamTarget = CfnEndpoint.Builder
+                .create(this, "StreamTarget")
                 .endpointType("target")
                 .engineName("kinesis")
                 .kinesisSettings(kinesisSettings)
@@ -125,8 +125,8 @@ public class StreamingStack extends Stack {
                 .create(this, "Task")
                 .migrationType("cdc")
                 .replicationInstanceArn(instance.getRef())
-                .sourceEndpointArn(source.getRef())
-                .targetEndpointArn(target.getRef())
+                .sourceEndpointArn(databaseSource.getRef())
+                .targetEndpointArn(streamTarget.getRef())
                 .replicationTaskSettings("{\n" +
                         "   " +
                         "\"TargetMetadata\": {\n" +
