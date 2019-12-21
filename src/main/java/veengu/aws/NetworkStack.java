@@ -172,7 +172,7 @@ public class NetworkStack extends Stack {
         return vpc;
     }
 
-    public SubnetSelection getPlacement() {
+    public SubnetSelection getSubnets() {
         return placement;
     }
 }

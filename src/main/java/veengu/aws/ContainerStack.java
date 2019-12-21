@@ -31,9 +31,10 @@ import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static java.lang.String.valueOf;
 import static software.amazon.awscdk.core.Duration.days;
 import static software.amazon.awscdk.core.Duration.seconds;
+import static software.amazon.awscdk.core.RemovalPolicy.DESTROY;
 import static software.amazon.awscdk.services.codebuild.BuildEnvironmentVariableType.PLAINTEXT;
 import static software.amazon.awscdk.services.codebuild.Cache.local;
-import static software.amazon.awscdk.services.codebuild.LinuxBuildImage.UBUNTU_14_04_OPEN_JDK_11;
+import static software.amazon.awscdk.services.codebuild.LinuxBuildImage.STANDARD_2_0;
 import static software.amazon.awscdk.services.codebuild.LocalCacheMode.*;
 import static software.amazon.awscdk.services.codebuild.Source.codeCommit;
 import static software.amazon.awscdk.services.codecommit.Repository.fromRepositoryName;
@@ -71,7 +72,7 @@ public class ContainerStack extends Stack {
         ///////////////////////////////////////////////////////////////////////////
         // Docker Registry
         ///////////////////////////////////////////////////////////////////////////
-        LifecycleRule oneDayImage = LifecycleRule.builder()
+        LifecycleRule oneDayRule = LifecycleRule.builder()
                 .tagStatus(ANY)
                 .maxImageAge(days(1))
                 .build();
@@ -79,7 +80,8 @@ public class ContainerStack extends Stack {
         Repository dockerRegistry = Repository.Builder
                 .create(this, "Registry")
                 .repositoryName(repositoryName + "/" + branchName)
-                .lifecycleRules(List.of(oneDayImage))
+                .lifecycleRules(List.of(oneDayRule))
+                .removalPolicy(DESTROY)
                 .build();
 
         ///////////////////////////////////////////////////////////////////////////
@@ -96,7 +98,7 @@ public class ContainerStack extends Stack {
         Map<String, String> environmentVariables = new TreeMap<>(Map.of(
                 "SERVER_ADDRESS", "0.0.0.0",
                 "SERVER_PORT", valueOf(CONTAINER_PORT),
-                "DATASOURCE_URL", "jdbc:mysql://" + databaseStack.getAddress(),
+                "DATASOURCE_URL", "jdbc:mysql://" + databaseStack.getSocket(),
                 "DATASOURCE_USERNAME", databaseStack.getUsername(),
                 "DATASOURCE_PASSWORD", databaseStack.getPassword(),
                 "SCHEMA_USERNAME", databaseStack.getSchemaUsername(),
@@ -132,13 +134,13 @@ public class ContainerStack extends Stack {
         FargateService service = FargateService.Builder
                 .create(this, "Service")
                 .cluster(networkStack.getCluster())
-                .vpcSubnets(networkStack.getPlacement())
+                .vpcSubnets(networkStack.getSubnets())
                 .assignPublicIp(false)
                 .taskDefinition(taskDefinition)
                 .desiredCount(0)
                 .minHealthyPercent(100)
                 .maxHealthyPercent(200)
-                .healthCheckGracePeriod(seconds(120))
+                .healthCheckGracePeriod(seconds(300))
                 .build();
 
         ///////////////////////////////////////////////////////////////////////////
@@ -191,7 +193,7 @@ public class ContainerStack extends Stack {
                 .build();
 
         BuildEnvironment buildEnvironment = BuildEnvironment.builder()
-                .buildImage(UBUNTU_14_04_OPEN_JDK_11)
+                .buildImage(STANDARD_2_0)
                 .privileged(true)
                 .build();
 

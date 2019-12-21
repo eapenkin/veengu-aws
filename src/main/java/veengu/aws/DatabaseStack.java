@@ -6,10 +6,14 @@ import software.amazon.awscdk.services.ec2.InstanceType;
 import software.amazon.awscdk.services.ec2.SecurityGroup;
 import software.amazon.awscdk.services.rds.DatabaseInstance;
 import software.amazon.awscdk.services.rds.Endpoint;
+import software.amazon.awscdk.services.rds.ParameterGroup;
 
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import static software.amazon.awscdk.core.Duration.days;
+import static software.amazon.awscdk.core.RemovalPolicy.DESTROY;
 import static software.amazon.awscdk.core.SecretValue.plainText;
 import static software.amazon.awscdk.services.ec2.InstanceClass.BURSTABLE2;
 import static software.amazon.awscdk.services.ec2.InstanceSize.MICRO;
@@ -39,28 +43,52 @@ public class DatabaseStack extends Stack {
                 .build();
         securityGroup.addIngressRule(anyIpv4(), tcp(databasePort));
 
+        ParameterGroup parameterGroup = ParameterGroup.Builder
+                .create(this, "ParameterGroup")
+                .family("mysql5.7")
+                .parameters(new TreeMap<>(Map.of(
+                        "character_set_database", "utf8mb4",
+                        "character_set_server", "utf8mb4",
+                        "binlog_format", "ROW",
+                        "binlog_checksum", "NONE",
+                        "binlog_row_image", "FULL",
+                        "innodb_flush_log_at_trx_commit", "1",
+                        "sync_binlog", "1")))
+                .build();
+
         InstanceType instanceClass = InstanceType.of(BURSTABLE2, MICRO);
 
         DatabaseInstance database = DatabaseInstance.Builder
                 .create(this, "DB")
                 .vpc(networkStack.getVpc())
-                .vpcPlacement(networkStack.getPlacement())
+                .vpcPlacement(networkStack.getSubnets())
                 .instanceClass(instanceClass)
                 .engine(MYSQL)
-                .engineVersion("8.0.16")
+                .engineVersion("5.7.26")
                 .securityGroups(List.of(securityGroup))
                 .port(databasePort)
                 .masterUsername(SCHEMA_USERNAME)
                 .masterUserPassword(plainText(SCHEMA_PASSWORD))
                 .allocatedStorage(20)
-                .backupRetention(days(0))
+                .parameterGroup(parameterGroup)
+                .backupRetention(days(1))
+                .removalPolicy(DESTROY)
+                .deleteAutomatedBackups(true)
                 .deletionProtection(false)
                 .build();
 
         endpoint = database.getInstanceEndpoint();
     }
 
-    public String getAddress() {
+    public String getHost() {
+        return endpoint.getHostname();
+    }
+
+    public Number getPort() {
+        return endpoint.getPort();
+    }
+
+    public String getSocket() {
         return endpoint.getSocketAddress();
     }
 
