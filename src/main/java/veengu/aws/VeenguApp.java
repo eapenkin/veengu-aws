@@ -19,11 +19,13 @@ public class VeenguApp {
         ///////////////////////////////////////////////////////////////////////////
         // Common Components
         ///////////////////////////////////////////////////////////////////////////
+
         NetworkStack net = new NetworkStack(app, "Network", INTERNET_PORT, INTERNET_DOMAIN, DOMAIN_ID);
 
         ///////////////////////////////////////////////////////////////////////////
         // Demo Environment
         ///////////////////////////////////////////////////////////////////////////
+
         DatabaseStack demoDb = new DatabaseStack(app, "DemoDatabase", net, DATABASE_PORT);
         ContainerStack demoApp = new ContainerStack(app, "DemoContainer", net, demoDb, VEENGU_REPO, DEMO_BRANCH, 10);
         StreamingStack demoStream = new StreamingStack(app, "DemoStream", net, demoDb);
@@ -31,6 +33,7 @@ public class VeenguApp {
         ///////////////////////////////////////////////////////////////////////////
         // Develop Environment
         ///////////////////////////////////////////////////////////////////////////
+
         DatabaseStack devDb = new DatabaseStack(app, "DevelopDatabase", net, DATABASE_PORT);
         ContainerStack devApp = new ContainerStack(app, "DevelopContainer", net, devDb, VEENGU_REPO, DEVELOP_BRANCH, 20);
         StreamingStack devStream = new StreamingStack(app, "DevelopStream", net, devDb);

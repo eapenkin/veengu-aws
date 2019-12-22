@@ -14,6 +14,7 @@ import software.amazon.awscdk.services.route53.targets.LoadBalancerTarget;
 
 import java.util.List;
 
+import static software.amazon.awscdk.services.ec2.GatewayVpcEndpointAwsService.S3;
 import static software.amazon.awscdk.services.ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH_LOGS;
 import static software.amazon.awscdk.services.ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER;
 import static software.amazon.awscdk.services.ec2.Peer.anyIpv4;
@@ -31,7 +32,7 @@ public class NetworkStack extends Stack {
     private final ApplicationListener listener;
     private final IHostedZone zone;
     private final Vpc vpc;
-    private final SubnetSelection placement;
+    private final SubnetSelection subnets;
 
     public NetworkStack(final Construct scope,
                         final String id,
@@ -63,7 +64,7 @@ public class NetworkStack extends Stack {
                 .subnetConfiguration(List.of(publicSubnet, isolatedSubnet))
                 .build();
 
-        placement = SubnetSelection.builder()
+        subnets = SubnetSelection.builder()
                 .subnetType(ISOLATED)
                 .build();
 
@@ -80,19 +81,19 @@ public class NetworkStack extends Stack {
 
         InterfaceVpcEndpointOptions dockerInterface = InterfaceVpcEndpointOptions.builder()
                 .service(ECR_DOCKER)
-                .subnets(placement)
+                .subnets(subnets)
                 .securityGroups(List.of(securityGroup))
                 .build();
 
         InterfaceVpcEndpointOptions logsInterface = InterfaceVpcEndpointOptions.builder()
                 .service(CLOUDWATCH_LOGS)
-                .subnets(placement)
+                .subnets(subnets)
                 .securityGroups(List.of(securityGroup))
                 .build();
 
         GatewayVpcEndpointOptions s3Gateway = GatewayVpcEndpointOptions.builder()
-                .service(GatewayVpcEndpointAwsService.S3)
-                .subnets(List.of(placement))
+                .service(S3)
+                .subnets(List.of(subnets))
                 .build();
 
         vpc.addInterfaceEndpoint("RegistryInterface", dockerInterface);
@@ -173,6 +174,6 @@ public class NetworkStack extends Stack {
     }
 
     public SubnetSelection getSubnets() {
-        return placement;
+        return subnets;
     }
 }
