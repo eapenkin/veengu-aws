@@ -129,7 +129,7 @@ public class StreamingStack extends Stack {
                 .engineName("s3")
                 .s3Settings(s3Settings)
                 .extraConnectionAttributes(
-                        "timestampColumnName=committed_time;" +
+                        "timestampColumnName=committed_at;" +
                         "addColumnName=true;")
                 .build();
 
