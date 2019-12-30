@@ -9,7 +9,7 @@ public class VeenguApp {
     private static final String INTERNET_DOMAIN = "veengu.xyz";
     private static final String DOMAIN_ID = "Z3K66451X409D1";
 
-    private static final String VEENGU_REPO = "veengu-back";
+    private static final String VEENGU_REPO = "veengu-accounts";
     private static final String DEMO_BRANCH = "demo";
     private static final String DEVELOP_BRANCH = "develop";
 

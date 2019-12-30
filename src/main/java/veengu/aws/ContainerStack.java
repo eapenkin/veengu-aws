@@ -6,15 +6,12 @@ import software.amazon.awscdk.services.codebuild.BuildEnvironment;
 import software.amazon.awscdk.services.codebuild.BuildEnvironmentVariable;
 import software.amazon.awscdk.services.codebuild.CodeCommitSourceProps;
 import software.amazon.awscdk.services.codebuild.Project;
-import software.amazon.awscdk.services.codecommit.IRepository;
 import software.amazon.awscdk.services.codepipeline.Artifact;
 import software.amazon.awscdk.services.codepipeline.Pipeline;
 import software.amazon.awscdk.services.codepipeline.StageProps;
 import software.amazon.awscdk.services.codepipeline.actions.CodeBuildAction;
 import software.amazon.awscdk.services.codepipeline.actions.CodeCommitSourceAction;
 import software.amazon.awscdk.services.codepipeline.actions.EcsDeployAction;
-import software.amazon.awscdk.services.ecr.LifecycleRule;
-import software.amazon.awscdk.services.ecr.Repository;
 import software.amazon.awscdk.services.ecs.*;
 import software.amazon.awscdk.services.elasticloadbalancingv2.AddApplicationTargetGroupsProps;
 import software.amazon.awscdk.services.elasticloadbalancingv2.ApplicationTargetGroup;
@@ -29,17 +26,13 @@ import java.util.TreeMap;
 import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static java.lang.String.valueOf;
-import static software.amazon.awscdk.core.Duration.days;
 import static software.amazon.awscdk.core.Duration.seconds;
-import static software.amazon.awscdk.core.RemovalPolicy.DESTROY;
 import static software.amazon.awscdk.services.codebuild.BuildEnvironmentVariableType.PLAINTEXT;
 import static software.amazon.awscdk.services.codebuild.Cache.local;
 import static software.amazon.awscdk.services.codebuild.LinuxBuildImage.STANDARD_2_0;
 import static software.amazon.awscdk.services.codebuild.LocalCacheMode.*;
 import static software.amazon.awscdk.services.codebuild.Source.codeCommit;
-import static software.amazon.awscdk.services.codecommit.Repository.fromRepositoryName;
 import static software.amazon.awscdk.services.codepipeline.actions.CodeCommitTrigger.EVENTS;
-import static software.amazon.awscdk.services.ecr.TagStatus.ANY;
 import static software.amazon.awscdk.services.ecs.Protocol.TCP;
 import static software.amazon.awscdk.services.route53.RecordTarget.fromAlias;
 
@@ -72,17 +65,12 @@ public class ContainerStack extends Stack {
         ///////////////////////////////////////////////////////////////////////////
         // Docker Registry
         ///////////////////////////////////////////////////////////////////////////
-        LifecycleRule oneDayRule = LifecycleRule.builder()
-                .tagStatus(ANY)
-                .maxImageAge(days(1))
-                .build();
+        software.amazon.awscdk.services.ecr.IRepository dockerRegistry = software.amazon.awscdk.services.ecr.Repository.fromRepositoryName(this, "Registry", repositoryName);
 
-        Repository dockerRegistry = Repository.Builder
-                .create(this, "Registry")
-                .repositoryName(repositoryName + "/" + branchName)
-                .lifecycleRules(List.of(oneDayRule))
-                .removalPolicy(DESTROY)
-                .build();
+        ///////////////////////////////////////////////////////////////////////////
+        // Git Repository
+        ///////////////////////////////////////////////////////////////////////////
+        software.amazon.awscdk.services.codecommit.IRepository gitRepository = software.amazon.awscdk.services.codecommit.Repository.fromRepositoryName(this, "Repository", repositoryName);
 
         ///////////////////////////////////////////////////////////////////////////
         // Task Definition
@@ -178,11 +166,6 @@ public class ContainerStack extends Stack {
                 .build();
 
         networkStack.getListener().addTargetGroups(upperCamel(branchName), listenerRule);
-
-        ///////////////////////////////////////////////////////////////////////////
-        // Git Repository
-        ///////////////////////////////////////////////////////////////////////////
-        IRepository gitRepository = fromRepositoryName(this, "Repository", repositoryName);
 
         ///////////////////////////////////////////////////////////////////////////
         // Build Project
