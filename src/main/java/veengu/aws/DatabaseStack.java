@@ -47,8 +47,9 @@ public class DatabaseStack extends Stack {
                 .create(this, "ParameterGroup")
                 .family("mysql5.7")
                 .parameters(new TreeMap<>(Map.of(
-                        "character_set_database", "utf8mb4",
                         "character_set_server", "utf8mb4",
+                        "collation_server", "utf8mb4_bin",
+                        "max_allowed_packet", "5M",
                         "binlog_format", "ROW",
                         "binlog_checksum", "NONE",
                         "binlog_row_image", "FULL",
