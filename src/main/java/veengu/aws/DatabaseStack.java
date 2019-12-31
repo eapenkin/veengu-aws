@@ -49,7 +49,8 @@ public class DatabaseStack extends Stack {
                 .parameters(new TreeMap<>(Map.of(
                         "character_set_server", "utf8mb4",
                         "collation_server", "utf8mb4_bin",
-                        "max_allowed_packet", "5M",
+                        "innodb_log_buffer_size", "8388608",
+                        "max_allowed_packet", "8388608",
                         "binlog_format", "ROW",
                         "binlog_checksum", "NONE",
                         "binlog_row_image", "FULL",
