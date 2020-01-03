@@ -28,7 +28,6 @@ public class VeenguApp {
 
         DatabaseStack demoDb = new DatabaseStack(app, "DemoDatabase", net, DATABASE_PORT);
         ContainerStack demoApp = new ContainerStack(app, "DemoContainer", net, demoDb, VEENGU_REPO, DEMO_BRANCH, 10);
-        StreamingStack demoStream = new StreamingStack(app, "DemoStream", net, demoDb);
 
         ///////////////////////////////////////////////////////////////////////////
         // Develop Environment
